@@ -21,7 +21,7 @@ def main():
     plt.plot([1, 2, 3, 4])
     plt.ylabel('some numbers')
     plt.show()
-    print("Data for target, robot and error written")
+    print("Data for target, robot and errhhor written")
     
 
     
