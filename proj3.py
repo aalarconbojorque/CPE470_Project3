@@ -27,6 +27,9 @@ def main():
     nodes_va = (50 * np.ones((num_nodes, 1))) + (1 * np.random.randn(num_nodes, 1))
     nodes_va0 = nodes_va #Save inital measurments
 
+    #Find the neighbors of the nodes
+    Neigbors = FindNeighbors(nodes, r , n, delta_t_update)
+
     plt.plot([1, 2, 3, 4])
     plt.ylabel('some numbers')
     plt.show()
@@ -39,6 +42,24 @@ def main():
 # FUNCTION NAME:     CompMagSqr()
 # PURPOSE:           Computes the magnitude squared
 # -----------------------------------------------------------------------------
+def FindNeighbors(nodes, r, n, delta_t):
+
+    Neigbor_array = []
+
+    #Loop through each node and compare it to all other nodes
+    for i, item in enumerate(nodes, start=0): 
+        print("Looking at point " , i)
+        for j, item in enumerate(nodes, start=0):
+
+            #Calculate distance between node i and j
+            neighborDistance = np.sqrt(np.square(nodes[j][0] - nodes[i][0]) + np.square(nodes[j][1] - nodes[i][1]))
+            #If within range they are neighbors
+            if(neighborDistance <= r and neighborDistance != 0):
+                Neigbor_array.append(np.array([i,j]))
+                print("Node " , i , "->" , j)
+                print("Distance :" , np.sqrt(np.square(nodes[j][0] - nodes[i][0]) + np.square(nodes[j][1] - nodes[i][1])))
+
+    return Neigbor_array
 
     
 if __name__ == "__main__":
