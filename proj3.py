@@ -21,7 +21,7 @@ def main():
     r = 1 #Set Communication Range
     num_nodes = 10 #Randomly generated nodes
     delta_t_update = 0.008 
-    n = 2 #Number of dimensions aaaddd dsssdd
+    n = 2 #Number of dimensions aaaddddddd dsssdd ffff
     nodes = np.random.randn(num_nodes, n)
 
     #Add measurment for each node yi = theta_t + v_i
