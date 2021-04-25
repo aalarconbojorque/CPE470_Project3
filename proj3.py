@@ -68,21 +68,52 @@ def main():
         print("")
         print("")
 
+    #Single Cell Location, calc QBAR
+    Cell_Y_Sum = 0
+    Cell_X_Sum = 0
+    for i, item in enumerate(nodesObjects, start=0):
+        Cell_Y_Sum = Cell_Y_Sum + nodesObjects[i].position[1]
+        Cell_X_Sum = Cell_X_Sum + nodesObjects[i].position[0]  
+    Cell_Y_Sum = (1/num_nodes) * Cell_Y_Sum
+    Cell_X_Sum = (1/num_nodes) * Cell_X_Sum
+    Q_Bar = np.array([Cell_X_Sum, Cell_Y_Sum])
+
+    # X_values = []
+    # X_Values.insert(0, nodes_va0)
+  
+    # #Computer in t range
+    # for t in range(1, 80):
+    #     #Compute for each sensor node
+    #     for i, item in enumerate(X_Values, start=0):
+    #     #Get the sum of weights for all neighboring nodes and inital measurment
+    #         X_values[t][i] = 1
+        
+
     
 
     # Find the neighbors of the nodes
     #Neigbors = FindNeighbors(nodes, r, n, delta_t_update)
 
-    DisplayGraph(nodesObjects)
+    DisplayGraph(nodesObjects, Q_Bar)
     
 
-    print("Data for target, robot and errhhor written")
+    print("Data ")
+
+
+def WeightDesign1(i, j, nodesObjects):
+    
+    #Weighted average design 1 if i == j
+    if(i == j):
+        pass
+
+
+
 
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     DisplayGraph()
 # PURPOSE:           Displays a graph give the nodes and neighbors
 # -----------------------------------------------------------------------------
-def DisplayGraph(nodesObjects):
+def DisplayGraph(nodesObjects, Q_Bar):
 
     # Create graph object
     G = nx.Graph()
@@ -94,6 +125,8 @@ def DisplayGraph(nodesObjects):
     # Add nodes
     for i, item in enumerate(nodesObjects, start=0):
         G.add_node(str(i), pos=(nodesObjects[i].position[0], nodesObjects[i].position[1]))
+    
+    G.add_node("C", pos=(Q_Bar[0], Q_Bar[1]))
 
     # Add edges
     for i, item in enumerate(nodesObjects, start=0):
@@ -103,9 +136,17 @@ def DisplayGraph(nodesObjects):
     # Get subplots
     fig, ax = plt.subplots()
 
+    #Color cell
+    color_map = []
+    for node in G:
+        if node == "C":
+            color_map.append('red')
+        else: 
+            color_map.append('#00b4d9') 
+
     # Draw graph object
     nx.draw(G, nx.get_node_attributes(G, 'pos'),
-            with_labels=True, node_size=250)
+            with_labels=True, node_size=250, node_color=color_map)
 
     # Add x and y axis ticks and labels
     limits = plt.axis('on')
@@ -116,29 +157,29 @@ def DisplayGraph(nodesObjects):
     plt.show()
 
 
-# ----------------------------------------------------------------------------
-# FUNCTION NAME:     FindNeighbors()
-# PURPOSE:           Computes the neighbors given a nodes array
-# -----------------------------------------------------------------------------
-def FindNeighbors(nodes, r, n, delta_t):
+# # ----------------------------------------------------------------------------
+# # FUNCTION NAME:     FindNeighbors()
+# # PURPOSE:           Computes the neighbors given a nodes array
+# # -----------------------------------------------------------------------------
+# def FindNeighbors(nodes, r, n, delta_t):
 
-    #Tempt array for neigbors
-    Neigbor_array = []
+#     #Tempt array for neigbors
+#     Neigbor_array = []
 
-    # Loop through each node and compare it to all other nodes
-    for i, item in enumerate(nodes, start=0):
-        for j, item in enumerate(nodes, start=0):
+#     # Loop through each node and compare it to all other nodes
+#     for i, item in enumerate(nodes, start=0):
+#         for j, item in enumerate(nodes, start=0):
 
-            # Calculate distance between node i and j
-            neighborDistance = np.sqrt(
-                np.square(nodes[j][0] - nodes[i][0]) + np.square(nodes[j][1] - nodes[i][1]))
-            # If within range they are neighbors
-            if(neighborDistance <= r and neighborDistance != 0):
-                Neigbor_array.append(np.array([i, j]))
-                print("Node ", i, "->", j)
-                # print("Distance :" , np.sqrt(np.square(nodes[j][0] - nodes[i][0]) + np.square(nodes[j][1] - nodes[i][1])))
+#             # Calculate distance between node i and j
+#             neighborDistance = np.sqrt(
+#                 np.square(nodes[j][0] - nodes[i][0]) + np.square(nodes[j][1] - nodes[i][1]))
+#             # If within range they are neighbors
+#             if(neighborDistance <= r and neighborDistance != 0):
+#                 Neigbor_array.append(np.array([i, j]))
+#                 print("Node ", i, "->", j)
+#                 # print("Distance :" , np.sqrt(np.square(nodes[j][0] - nodes[i][0]) + np.square(nodes[j][1] - nodes[i][1])))
 
-    return Neigbor_array
+#     return Neigbor_array
 
 
 if __name__ == "__main__":
