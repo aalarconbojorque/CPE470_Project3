@@ -24,24 +24,25 @@ class GraphNode:
         self.position = position
         self.neighbors = neighbors
 
-    def FindyourNeighbors(self, nodes, r):
-      for j, item in enumerate(nodes, start=0):
+    def FindyourNeighbors(self, nodesObjects, r):
+      
+      for j, item in enumerate(nodesObjects, start=0):
             # Calculate distance between self and j
-            neighborDistance = np.sqrt(np.square(nodes[j][0] - self.position[0]) + np.square(nodes[j][1] - self.position[1]))
+            neighborDistance = np.sqrt(np.square(nodesObjects[j].position[0] - self.position[0]) + np.square(nodesObjects[j].position[1] - self.position[1]))
             # If within range they are neighbors
             if(neighborDistance <= r and neighborDistance != 0):
                 self.neighbors.append(j)
                # print("Node ", self.index, "->", j)
                 
 
-
-
 def main():
     r = 1  # Set Communication Range
     num_nodes = 10  # Randomly generated nodes
     delta_t_update = 0.008
-    n = 2  # Number of dimensions aaaddddddd dsssdd ffff ffff
+    n = 2  # Number of dimensions 
+    #Node positions
     nodes = np.random.randn(num_nodes, n)
+    #Node object array
     nodesObjects = []
 
     # Add measurment for each node yi = theta_t + v_i
@@ -49,16 +50,20 @@ def main():
         (1 * np.random.randn(num_nodes, 1))
     nodes_va0 = nodes_va  # Save inital measurments
 
+    #Populate node object array
     for i, item in enumerate(nodes, start=0):
         nodesObjects.append(GraphNode(i, np.array([nodes[i][0], nodes[i][1]]), []))
-        nodesObjects[i].FindyourNeighbors(nodes, r)
+
+    #Populate node neighbors
+    for i, item in enumerate(nodesObjects, start=0):
+        nodesObjects[i].FindyourNeighbors(nodesObjects, r)
 
     
 
     # Find the neighbors of the nodes
-    Neigbors = FindNeighbors(nodes, r, n, delta_t_update)
+    #Neigbors = FindNeighbors(nodes, r, n, delta_t_update)
 
-    DisplayGraph(nodes, Neigbors)
+    DisplayGraph(nodesObjects)
     
 
     print("Data for target, robot and errhhor written")
@@ -67,22 +72,23 @@ def main():
 # FUNCTION NAME:     DisplayGraph()
 # PURPOSE:           Displays a graph give the nodes and neighbors
 # -----------------------------------------------------------------------------
-def DisplayGraph(nodes, Neigbors):
+def DisplayGraph(nodesObjects):
 
     # Create graph object
     G = nx.Graph()
 
     # Display x and y coord
-    for i, item in enumerate(nodes, start=0):
-        print("Node ", i, " X :", nodes[i][0], " Y :", nodes[i][1])
+   # for i, item in enumerate(nodesObjects, start=0):
+        #print("Node ", i, " X :", nodesObjects[i].position[0], " Y :", nodesObjects[i].position[1])
 
     # Add nodes
-    for i, item in enumerate(nodes, start=0):
-        G.add_node(str(i), pos=(nodes[i][0], nodes[i][1]))
+    for i, item in enumerate(nodesObjects, start=0):
+        G.add_node(str(i), pos=(nodesObjects[i].position[0], nodesObjects[i].position[1]))
 
     # Add edges
-    for i, item in enumerate(Neigbors, start=0):
-        G.add_edge(str(Neigbors[i][0]), str(Neigbors[i][1]))
+    for i, item in enumerate(nodesObjects, start=0):
+        for j, item in enumerate(nodesObjects[i].neighbors, start=0):
+            G.add_edge(str(nodesObjects[i].index), str(nodesObjects[i].neighbors[j]))
 
     # Get subplots
     fig, ax = plt.subplots()
