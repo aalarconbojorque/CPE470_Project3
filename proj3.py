@@ -58,6 +58,16 @@ def main():
     for i, item in enumerate(nodesObjects, start=0):
         nodesObjects[i].FindyourNeighbors(nodesObjects, r)
 
+    #Print data
+    for i, item in enumerate(nodesObjects, start=0):
+        
+        print("Node ",  nodesObjects[i].index, " X :", nodesObjects[i].position[0], " Y :", nodesObjects[i].position[1])
+        print("- Has these neighbors ",  end = '')
+        for j, item in enumerate(nodesObjects[i].neighbors, start=0):
+            print(nodesObjects[i].neighbors[j]," ",  end = '')
+        print("")
+        print("")
+
     
 
     # Find the neighbors of the nodes
