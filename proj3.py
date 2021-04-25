@@ -81,29 +81,59 @@ def main():
    
     
     X_Values = []
-    X_Values.insert(0, nodes_va0)
-
+    
+    for t in range(1, 81):
+        X_Values.insert(0, nodes_va0)
+    
+    
     summat = 0
   
     #Computer in t range
     for t in range(1, 80):
-
-        #Compute for each sensor node
-        summat = 0
-
-        #For all neighbors
+        #For all nodes
         for i, item in enumerate(nodesObjects, start=0):
             summat = 0
+
             #Summation for all neighbors of i
             for j, item in enumerate(nodesObjects[i].neighbors, start=0):
-                summat = summat + (WeightDesign1(i,j, nodesObjects, num_nodes, Q_Bar) * X_Values[t][j])
+                summat = summat + (WeightDesign1(i, nodesObjects[i].neighbors[j] , nodesObjects, num_nodes, Q_Bar) * X_Values[t-1][nodesObjects[i].neighbors[j]])
 
-            X_Values[t][i] = WeightDesign1(i,i, nodesObjects, num_nodes, Q_Bar) * X_Values[t-1][i] + summat
+            wehgit = WeightDesign1(i,i, nodesObjects, num_nodes, Q_Bar)
+            print(wehgit, float(X_Values[t-1][i]), float(summat))
+            X_Values[t][i] =  wehgit * float(X_Values[t-1][i]) + summat
         
 
-    
+
+    for i, item in enumerate(nodes_va0, start=0):
+        print(nodes_va0[i])
+
+    print("EF")
+    for i, item in enumerate(X_Values[79], start=0):
+        print(X_Values[78][i])
 
     DisplayGraph(nodesObjects, Q_Bar) 
+
+    x_a = []
+    y_a = []
+
+    for i, item in enumerate(nodesObjects, start=0):
+        x_a.append(i)
+        y_a.append(X_Values[0][i])
+
+    plt.scatter(x_a, y_a, s=20, alpha=1)
+
+    x_a = []
+    y_a = []
+
+    for i, item in enumerate(nodesObjects, start=0):
+        x_a.append(i)
+        y_a.append(X_Values[1][i])
+
+    
+    plt.scatter(x_a, y_a, s=20, alpha=1)
+    plt.show()
+
+
     print("Data ")
 
 
@@ -119,13 +149,17 @@ def WeightDesign1(i, j, nodesObjects, num_nodes, Q_Bar):
     if(i != j):
         Vi = (((np.linalg.norm(nodesObjects[i].position - Q_Bar))**2) + cv) / (ris**2)
         Vj = (((np.linalg.norm(nodesObjects[j].position - Q_Bar))**2) + cv) / (ris**2)
-        return (c1W/(vi +vj))
+        return (c1W/(Vi +Vj))
     #Weighted average design 1 if i == j
     else:
         #Calculate weights for each neighobr of node i, sum them
         for k, item in enumerate(nodesObjects[i].neighbors, start=0):
-            Equalsum = Equalsum + WeightDesign1(i, k, nodesObjects, num_nodes, Q_Bar)
-        return Equalsum
+            if(i != nodesObjects[i].neighbors[k]):
+                Equalsum = Equalsum + WeightDesign1(i, nodesObjects[i].neighbors[k], nodesObjects, num_nodes, Q_Bar)
+            else:
+                Equalsum = Equalsum
+
+        return 1 - Equalsum
 
 
 
