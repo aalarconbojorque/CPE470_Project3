@@ -78,33 +78,55 @@ def main():
     Cell_X_Sum = (1/num_nodes) * Cell_X_Sum
     Q_Bar = np.array([Cell_X_Sum, Cell_Y_Sum])
 
-    # X_values = []
-    # X_Values.insert(0, nodes_va0)
+   
+    
+    X_Values = []
+    X_Values.insert(0, nodes_va0)
+
+    summat = 0
   
-    # #Computer in t range
-    # for t in range(1, 80):
-    #     #Compute for each sensor node
-    #     for i, item in enumerate(X_Values, start=0):
-    #     #Get the sum of weights for all neighboring nodes and inital measurment
-    #         X_values[t][i] = 1
+    #Computer in t range
+    for t in range(1, 80):
+
+        #Compute for each sensor node
+        summat = 0
+
+        #For all neighbors
+        for i, item in enumerate(nodesObjects, start=0):
+            summat = 0
+            #Summation for all neighbors of i
+            for j, item in enumerate(nodesObjects[i].neighbors, start=0):
+                summat = summat + (WeightDesign1(i,j, nodesObjects, num_nodes, Q_Bar) * X_Values[t][j])
+
+            X_Values[t][i] = WeightDesign1(i,i, nodesObjects, num_nodes, Q_Bar) * X_Values[t-1][i] + summat
         
 
     
 
-    # Find the neighbors of the nodes
-    #Neigbors = FindNeighbors(nodes, r, n, delta_t_update)
-
-    DisplayGraph(nodesObjects, Q_Bar)
-    
-
+    DisplayGraph(nodesObjects, Q_Bar) 
     print("Data ")
 
 
-def WeightDesign1(i, j, nodesObjects):
+def WeightDesign1(i, j, nodesObjects, num_nodes, Q_Bar):
     
+    cv = 0.001
+    ris = 1.6
+    
+    c1W = ((2*cv)/((ris**2)*(num_nodes-1)))
+    Equalsum = 0
+
+    #Weighted average design 1 if i != j
+    if(i != j):
+        Vi = (((np.linalg.norm(nodesObjects[i].position - Q_Bar))**2) + cv) / (ris**2)
+        Vj = (((np.linalg.norm(nodesObjects[j].position - Q_Bar))**2) + cv) / (ris**2)
+        return (c1W/(vi +vj))
     #Weighted average design 1 if i == j
-    if(i == j):
-        pass
+    else:
+        #Calculate weights for each neighobr of node i, sum them
+        for k, item in enumerate(nodesObjects[i].neighbors, start=0):
+            Equalsum = Equalsum + WeightDesign1(i, k, nodesObjects, num_nodes, Q_Bar)
+        return Equalsum
+
 
 
 
