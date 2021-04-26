@@ -58,15 +58,15 @@ def main():
     for i, item in enumerate(nodesObjects, start=0):
         nodesObjects[i].FindyourNeighbors(nodesObjects, r)
 
-    #Print data
-    for i, item in enumerate(nodesObjects, start=0):
+    # #Print data
+    # for i, item in enumerate(nodesObjects, start=0):
         
-        print("Node ",  nodesObjects[i].index, " X :", nodesObjects[i].position[0], " Y :", nodesObjects[i].position[1])
-        print("- Has these neighbors ",  end = '')
-        for j, item in enumerate(nodesObjects[i].neighbors, start=0):
-            print(nodesObjects[i].neighbors[j]," ",  end = '')
-        print("")
-        print("")
+    #     # print("Node ",  nodesObjects[i].index, " X :", nodesObjects[i].position[0], " Y :", nodesObjects[i].position[1])
+    #     # print("- Has these neighbors ",  end = '')
+    #     for j, item in enumerate(nodesObjects[i].neighbors, start=0):
+    #         #print(nodesObjects[i].neighbors[j]," ",  end = '')
+    #     #print("")
+    #     #print("")
 
     #Single Cell Location, calc QBAR
     Cell_Y_Sum = 0
@@ -98,22 +98,28 @@ def main():
 
             #Summation for all neighbors of i
             for j, item in enumerate(nodesObjects[i].neighbors, start=0):
+                print(X_Values[t-1][nodesObjects[i].neighbors[j]])
                 summat = summat + (WeightDesign1(i, nodesObjects[i].neighbors[j] , nodesObjects, num_nodes, Q_Bar) * X_Values[t-1][nodesObjects[i].neighbors[j]])
 
             wehgit = WeightDesign1(i,i, nodesObjects, num_nodes, Q_Bar)
+            print(summat, float(X_Values[t-1][i]))
             val1_a =  wehgit * float(X_Values[t-1][i]) + summat
 
-            #print("Past X : ", X_Values[t-1][i] , " New X : ", val1_a)
+            print("Past X : ", X_Values[t-1][i] , " New X : ", val1_a)
 
             X_Values[t][i] =  val1_a
 
-            new_NodePos = nodesObjects[i].position - Q_Bar
-            neigDistance = np.sqrt(np.square(nodesObjects[i].position[0] - Q_Bar[0]) + np.square(nodesObjects[i].position[1] - Q_Bar[1]))
-            
+            new_NodePos =  Q_Bar - nodesObjects[i].position 
+            nodesObjects[i].position = new_NodePos +  nodesObjects[i].position
+            nodesObjects[i].FindyourNeighbors(nodesObjects, r)
 
-            if(neigDistance <= 0.5 or neigDistance >= 0.5):
-                nodesObjects[i].position = new_NodePos
-                nodesObjects[i].FindyourNeighbors(nodesObjects, r)
+
+            # neigDistance = np.sqrt(np.square(nodesObjects[i].position[0] - Q_Bar[0]) + np.square(nodesObjects[i].position[1] - Q_Bar[1]))
+            # print(neigDistance)
+
+            # if((neigDistance <= 0.5 and neigDistance >= 0.5)):
+            #     nodesObjects[i].position = new_NodePos
+            #     nodesObjects[i].FindyourNeighbors(nodesObjects, r)
         
 
 
@@ -155,7 +161,7 @@ def WeightDesign1(i, j, nodesObjects, num_nodes, Q_Bar):
     cv = 0.001
     ris = 1.6
     
-    c1W = ((2*cv)/((ris**2)*(num_nodes-1)))
+    c1W = ((1/2)*(2*cv)/((ris**2)*(num_nodes-1)))
     Equalsum = 0
 
     #Weighted average design 1 if i != j
