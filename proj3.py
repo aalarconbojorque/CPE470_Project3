@@ -122,27 +122,9 @@ def main():
     for i, item in enumerate(X_Values[79], start=0):
         print(X_Values[79][i])
 
-    DisplayGraph(nodesObjects, Q_Bar) 
+    #DisplayGraph(nodesObjects, Q_Bar) 
 
-    x_a = []
-    y_a = []
-
-    for i, item in enumerate(nodesObjects, start=0):
-        x_a.append(i)
-        y_a.append(X_Values[0][i])
-
-    plt.scatter(x_a, y_a, s=20, alpha=1)
-
-    x_a = []
-    y_a = []
-
-    for i, item in enumerate(nodesObjects, start=0):
-        x_a.append(i)
-        y_a.append(X_Values[79][i])
-
-    
-    plt.scatter(x_a, y_a, s=20, alpha=1)
-    plt.show()
+    DisplayScatterPlot(nodesObjects, X_Values)
 
 
     print("Data ")
@@ -206,7 +188,38 @@ def V_t(nodesObjects, i, Q_Bar):
         return 0
 
 
+# ----------------------------------------------------------------------------
+# FUNCTION NAME:     DisplayScatterPlot()
+# PURPOSE:           Displays Scatter Plot for measurements
+# -----------------------------------------------------------------------------
+def DisplayScatterPlot(nodesObjects, X_Values):
+    
+    x_a = []
+    y_a = []
 
+    for i, item in enumerate(nodesObjects, start=0):
+        x_a.append(i)
+        y_a.append(X_Values[0][i])
+
+    plt.scatter(x_a, y_a, label="Inital Measurment")
+    plt.plot(x_a, y_a)
+
+    x_a = []
+    y_a = []
+
+    for i, item in enumerate(nodesObjects, start=0):
+        x_a.append(i)
+        y_a.append(X_Values[79][i])
+
+    plt.title("Measurements Comparison")
+    plt.scatter(x_a, y_a, label="Final Measurment")
+    plt.plot(x_a, y_a)
+    plt.xlabel("10 nodes")
+    plt.ylabel("Value")
+    plt.xticks(x_a)
+    plt.legend(loc="best")
+    plt.show()
+   
 
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     DisplayGraph()
