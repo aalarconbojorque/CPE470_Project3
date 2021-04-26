@@ -10,7 +10,7 @@
 # ----------------   -----------    ---------------
 # Andy Alarcon       04-23-2021     1.0 ... Setup dev environment, imported NumPy
 # Andy Alarcon       04-25-2021     1.1 ... imported matpotlib and networkx, created graph display
-# Andy Alarcon       04-26-2021     1.1 ... implemented weight design 1
+# Andy Alarcon       04-26-2021     1.1 ... implemented weight design 1, graphs for average and measurements
 # -----------------------------------------------------------------------------
 
 import matplotlib.pyplot as plt
