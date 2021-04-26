@@ -212,7 +212,7 @@ def DisplayScatterPlot(nodesObjects, X_Values):
         y_a.append(X_Values[79][i])
 
     plt.title("Measurements Comparison")
-    plt.scatter(x_a, y_a, label="Final Measurment")
+    plt.scatter(x_a, y_a, label="Final Measurmfent")
     plt.plot(x_a, y_a)
     plt.xlabel("10 nodes")
     plt.ylabel("Value")
