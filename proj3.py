@@ -79,13 +79,15 @@ def main():
     Q_Bar = np.array([Cell_X_Sum, Cell_Y_Sum])
 
    
-    
+    DisplayGraph(nodesObjects, Q_Bar)
     X_Values = []
     
-    for t in range(1, 81):
-        X_Values.insert(0, nodes_va0)
-    
-    
+    for t in range(1, 80):
+        X_Values.insert(0, (0 * np.ones((num_nodes, 1))) + \
+        (1 * np.ones((num_nodes, 1))))
+
+    nodes_initial = nodes_va0
+    X_Values.insert(0, nodes_initial)
     summat = 0
   
     #Computer in t range
@@ -99,17 +101,28 @@ def main():
                 summat = summat + (WeightDesign1(i, nodesObjects[i].neighbors[j] , nodesObjects, num_nodes, Q_Bar) * X_Values[t-1][nodesObjects[i].neighbors[j]])
 
             wehgit = WeightDesign1(i,i, nodesObjects, num_nodes, Q_Bar)
-            print(wehgit, float(X_Values[t-1][i]), float(summat))
-            X_Values[t][i] =  wehgit * float(X_Values[t-1][i]) + summat
+            val1_a =  wehgit * float(X_Values[t-1][i]) + summat
+
+            #print("Past X : ", X_Values[t-1][i] , " New X : ", val1_a)
+
+            X_Values[t][i] =  val1_a
+
+            new_NodePos = nodesObjects[i].position - Q_Bar
+            neigDistance = np.sqrt(np.square(nodesObjects[i].position[0] - Q_Bar[0]) + np.square(nodesObjects[i].position[1] - Q_Bar[1]))
+            
+
+            if(neigDistance <= 0.5 or neigDistance >= 0.5):
+                nodesObjects[i].position = new_NodePos
+                nodesObjects[i].FindyourNeighbors(nodesObjects, r)
         
 
 
-    for i, item in enumerate(nodes_va0, start=0):
-        print(nodes_va0[i])
+    # for i, item in enumerate(nodes_va0, start=0):
+    #     print(nodes_va0[i])
 
-    print("EF")
-    for i, item in enumerate(X_Values[79], start=0):
-        print(X_Values[78][i])
+    # print("EF")
+    # for i, item in enumerate(X_Values[79], start=0):
+    #     print(X_Values[79][i])
 
     DisplayGraph(nodesObjects, Q_Bar) 
 
@@ -127,7 +140,7 @@ def main():
 
     for i, item in enumerate(nodesObjects, start=0):
         x_a.append(i)
-        y_a.append(X_Values[1][i])
+        y_a.append(X_Values[79][i])
 
     
     plt.scatter(x_a, y_a, s=20, alpha=1)
@@ -147,10 +160,17 @@ def WeightDesign1(i, j, nodesObjects, num_nodes, Q_Bar):
 
     #Weighted average design 1 if i != j
     if(i != j):
-        Vi = (((np.linalg.norm(nodesObjects[i].position - Q_Bar))**2) + cv) / (ris**2)
-        Vj = (((np.linalg.norm(nodesObjects[j].position - Q_Bar))**2) + cv) / (ris**2)
-        return (c1W/(Vi +Vj))
-    #Weighted average design 1 if i == j
+
+        Vi = V_t(nodesObjects, i, Q_Bar)
+        Vj = V_t(nodesObjects, j, Q_Bar)
+
+        if(Vi == 0 or Vj == 0):
+            return 0
+        
+        else:
+            return (c1W/(Vi +Vj))
+    
+    #Weighted average design 1 if i == j    
     else:
         #Calculate weights for each neighobr of node i, sum them
         for k, item in enumerate(nodesObjects[i].neighbors, start=0):
@@ -161,6 +181,28 @@ def WeightDesign1(i, j, nodesObjects, num_nodes, Q_Bar):
 
         return 1 - Equalsum
 
+
+# ----------------------------------------------------------------------------
+# FUNCTION NAME:     V_t()
+# PURPOSE:           Calculate noise variance given a node i
+# -----------------------------------------------------------------------------
+def V_t(nodesObjects, i, Q_Bar):
+
+    #Calculate noise variance
+    cv = 0.001
+    ris = 1.6
+
+    Node_Pos = nodesObjects[i].position
+    Distance = Node_Pos - Q_Bar
+    Distance = np.linalg.norm(Distance)
+
+    if(Distance <= ris):
+        Distance = Distance**2
+        V_i = Distance + cv
+        V_i = (V_i/(ris**2))
+        return V_i
+    else :
+        return 0
 
 
 
