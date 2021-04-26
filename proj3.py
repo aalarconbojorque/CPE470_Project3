@@ -10,6 +10,7 @@
 # ----------------   -----------    ---------------
 # Andy Alarcon       04-23-2021     1.0 ... Setup dev environment, imported NumPy
 # Andy Alarcon       04-25-2021     1.1 ... imported matpotlib and networkx, created graph display
+# Andy Alarcon       04-26-2021     1.1 ... implemented weight design 1
 # -----------------------------------------------------------------------------
 
 import matplotlib.pyplot as plt
@@ -18,6 +19,7 @@ import numpy as np
 import math
 import random
 
+#Class that represent a single graph node
 class GraphNode:
     def __init__(self, index, position, neighbors):
         self.index = index
@@ -58,15 +60,6 @@ def main():
     for i, item in enumerate(nodesObjects, start=0):
         nodesObjects[i].FindyourNeighbors(nodesObjects, r)
 
-    # #Print data
-    # for i, item in enumerate(nodesObjects, start=0):
-        
-    #     # print("Node ",  nodesObjects[i].index, " X :", nodesObjects[i].position[0], " Y :", nodesObjects[i].position[1])
-    #     # print("- Has these neighbors ",  end = '')
-    #     for j, item in enumerate(nodesObjects[i].neighbors, start=0):
-    #         #print(nodesObjects[i].neighbors[j]," ",  end = '')
-    #     #print("")
-    #     #print("")
 
     #Single Cell Location, calc QBAR
     Cell_Y_Sum = 0
@@ -78,57 +71,56 @@ def main():
     Cell_X_Sum = (1/num_nodes) * Cell_X_Sum
     Q_Bar = np.array([Cell_X_Sum, Cell_Y_Sum])
 
-   
+    #Display inital graph
     DisplayGraph(nodesObjects, Q_Bar)
-    X_Values = []
     
+    #Initalize x(t) array for measurement
+    X_Values = []  
     for t in range(1, 80):
         X_Values.insert(0, (0 * np.ones((num_nodes, 1))) + \
         (1 * np.ones((num_nodes, 1))))
 
+    #Insert initial measurement
     nodes_initial = nodes_va0
     X_Values.insert(0, nodes_initial)
     summat = 0
   
     #Computer in t range
     for t in range(1, 80):
+        
         #For all nodes
         for i, item in enumerate(nodesObjects, start=0):
+            
+            #Reset summation of neighbor weights
             summat = 0
 
-            #Summation for all neighbors of i
+            #Summation for all neighbors of node i
             for j, item in enumerate(nodesObjects[i].neighbors, start=0):
-                print(X_Values[t-1][nodesObjects[i].neighbors[j]])
                 summat = summat + (WeightDesign1(i, nodesObjects[i].neighbors[j] , nodesObjects, num_nodes, Q_Bar) * X_Values[t-1][nodesObjects[i].neighbors[j]])
 
-            wehgit = WeightDesign1(i,i, nodesObjects, num_nodes, Q_Bar)
-            print(summat, float(X_Values[t-1][i]))
-            val1_a =  wehgit * float(X_Values[t-1][i]) + summat
+            #Compute weight for ii
+            iiWeightComp = WeightDesign1(i,i, nodesObjects, num_nodes, Q_Bar)
+            val1 =  iiWeightComp * float(X_Values[t-1][i]) + summat
 
-            print("Past X : ", X_Values[t-1][i] , " New X : ", val1_a)
+            #Assign next measurment
+            X_Values[t][i] =  val1
 
-            X_Values[t][i] =  val1_a
-
+            #Move current node towards cell
             new_NodePos =  Q_Bar - nodesObjects[i].position 
             nodesObjects[i].position = new_NodePos +  nodesObjects[i].position
             nodesObjects[i].FindyourNeighbors(nodesObjects, r)
 
 
-            # neigDistance = np.sqrt(np.square(nodesObjects[i].position[0] - Q_Bar[0]) + np.square(nodesObjects[i].position[1] - Q_Bar[1]))
-            # print(neigDistance)
-
-            # if((neigDistance <= 0.5 and neigDistance >= 0.5)):
-            #     nodesObjects[i].position = new_NodePos
-            #     nodesObjects[i].FindyourNeighbors(nodesObjects, r)
+        
         
 
 
-    # for i, item in enumerate(nodes_va0, start=0):
-    #     print(nodes_va0[i])
+    for i, item in enumerate(nodes_va0, start=0):
+        print(nodes_va0[i])
 
-    # print("EF")
-    # for i, item in enumerate(X_Values[79], start=0):
-    #     print(X_Values[79][i])
+    print("EF")
+    for i, item in enumerate(X_Values[79], start=0):
+        print(X_Values[79][i])
 
     DisplayGraph(nodesObjects, Q_Bar) 
 
@@ -155,7 +147,10 @@ def main():
 
     print("Data ")
 
-
+# ----------------------------------------------------------------------------
+# FUNCTION NAME:     WeightDesign1()
+# PURPOSE:           Calculate weight design 1 given a node i and j
+# -----------------------------------------------------------------------------
 def WeightDesign1(i, j, nodesObjects, num_nodes, Q_Bar):
     
     cv = 0.001
@@ -222,9 +217,6 @@ def DisplayGraph(nodesObjects, Q_Bar):
     # Create graph object
     G = nx.Graph()
 
-    # Display x and y coord
-   # for i, item in enumerate(nodesObjects, start=0):
-        #print("Node ", i, " X :", nodesObjects[i].position[0], " Y :", nodesObjects[i].position[1])
 
     # Add nodes
     for i, item in enumerate(nodesObjects, start=0):
@@ -261,29 +253,6 @@ def DisplayGraph(nodesObjects, Q_Bar):
     plt.show()
 
 
-# # ----------------------------------------------------------------------------
-# # FUNCTION NAME:     FindNeighbors()
-# # PURPOSE:           Computes the neighbors given a nodes array
-# # -----------------------------------------------------------------------------
-# def FindNeighbors(nodes, r, n, delta_t):
-
-#     #Tempt array for neigbors
-#     Neigbor_array = []
-
-#     # Loop through each node and compare it to all other nodes
-#     for i, item in enumerate(nodes, start=0):
-#         for j, item in enumerate(nodes, start=0):
-
-#             # Calculate distance between node i and j
-#             neighborDistance = np.sqrt(
-#                 np.square(nodes[j][0] - nodes[i][0]) + np.square(nodes[j][1] - nodes[i][1]))
-#             # If within range they are neighbors
-#             if(neighborDistance <= r and neighborDistance != 0):
-#                 Neigbor_array.append(np.array([i, j]))
-#                 print("Node ", i, "->", j)
-#                 # print("Distance :" , np.sqrt(np.square(nodes[j][0] - nodes[i][0]) + np.square(nodes[j][1] - nodes[i][1])))
-
-#     return Neigbor_array
 
 
 if __name__ == "__main__":
