@@ -49,7 +49,7 @@ def main():
     #Node object array
     nodesObjects = []
     #Iterations
-    it = 500
+    it = 1000
 
     # Add measurment for each node yi = theta_t + v_i
     nodes_va = (50 * np.ones((num_nodes, 1))) + \
@@ -161,7 +161,7 @@ def main():
     #--------------------------------------------------------------------------------------------------------------------------
   
     #Display inital graph
-    it = 40
+    it = 60
     DisplayGraph(InitalNodeObjects, Q_Bar, "Graph2.png")
 
     #Reassign inital node object
