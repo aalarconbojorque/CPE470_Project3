@@ -9,6 +9,7 @@
 # Author             Date           Modification(s)
 # ----------------   -----------    ---------------
 # Andy Alarcon       04-27-2021     1.0 ... Copied code from weightedAverageConsensu.py
+# Andy Alarcon       04-28-2021     1.0 ... Implemted metropolis and average
 # -----------------------------------------------------------------------------
 
 import matplotlib.pyplot as plt
@@ -38,7 +39,7 @@ class GraphNode:
 
 def main():
     r = 1  # Set Communication Range
-    num_nodes = 10  # Randomly generated nodes
+    num_nodes = 50  # Randomly generated nodes
     delta_t_update = 0.008
     n = 2  # Number of dimensions
     #Node positions
@@ -301,7 +302,7 @@ def DisplayNodesGraph(E_Values, X_Values, it, FileName):
     #plt.title("Average Comparison")  
     plt.xlabel("Iterations")
     plt.ylabel("Value")
-    plt.legend(loc="upper right")
+    #plt.legend(loc="upper right")
     plt.savefig(FileName, dpi=1200) 
     plt.show()
     plt.close()
@@ -334,7 +335,7 @@ def DisplayScatterPlot(nodesObjects, X_Values, it, FileName):
     plt.plot(x_a, y_a)
     plt.xlabel("10 nodes")
     plt.ylabel("Value")
-    plt.xticks(x_a)
+    #plt.xticks(x_a)
     plt.legend(loc="best")
 
     plt.savefig(FileName, dpi=1200)  
@@ -382,7 +383,6 @@ def DisplayGraph(nodesObjects, Q_Bar, FileName):
     ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
     plt.xlabel('X (pos)')
     plt.ylabel('Y (pos)')
-    plt.title("10 Graph nodes")
     plt.savefig(FileName, dpi=1200) 
     plt.show()
 
