@@ -129,13 +129,16 @@ def main():
             val1 =  iiWeightComp * float(X_Values[t-1][i]) + summat
             
             #Assign next measurment
-            X_Values[t][i] =  val1
+            if(math.isnan(val1)):
+                print("NAN a")
+                out_num = np.nan_to_num(val1)
+                X_Values[t][i] =  out_num
+            else:
+                X_Values[t][i] = val1
 
             #Compute weighted average
-            #np.seterr(divide='ignore', invalid='ignore')
             PossibleNan = ((iiWeightComp * X_Values[t-1][i]) /(iiWeightComp))
             if(math.isnan(PossibleNan)):
-                print("NAN CORRECTED")
                 out_num = np.nan_to_num(PossibleNan)
                 E_Values[t][i] = out_num
             
@@ -152,8 +155,9 @@ def main():
 
     # Weight Design 2
     #--------------------------------------------------------------------------------------------------------------------------
-    it = 40
+  
     #Display inital graph
+    it = 40
     DisplayGraph(InitalNodeObjects, Q_Bar, "Graph2.png")
 
     #Reassign inital node object
@@ -197,14 +201,13 @@ def main():
             #Compute weighted average
             #np.seterr(divide='ignore', invalid='ignore')
 
-            PossibleNan = ((iiWeightComp * X_Values[t-1][i]) /(iiWeightComp))
+            PossibleNan = ((iiWeightComp * X2_Values[t-1][i]) /(iiWeightComp))
             if(math.isnan(PossibleNan)):
-                print("NAN CORRECTED")
                 out_num = np.nan_to_num(PossibleNan)
-                E_Values[t][i] = out_num
+                E2_Values[t][i] = out_num
             
             else:
-                E_Values[t][i] = PossibleNan
+                E2_Values[t][i] = PossibleNan
 
             #Move current node towards cell
             new_NodePos =  Q_Bar - nodesObjects[i].position
@@ -218,7 +221,7 @@ def main():
 
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     WeightDesign2()
-# PURPOSE:           Calculate weight design 1 given a node i and j
+# PURPOSE:           Calculate weight design 2 given a node i and j
 # -----------------------------------------------------------------------------
 def WeightDesign2(i, j, nodesObjects, num_nodes, Q_Bar):
 
@@ -228,20 +231,20 @@ def WeightDesign2(i, j, nodesObjects, num_nodes, Q_Bar):
 
     Equalsum = 0
 
-    #WeightDesign2
+    #WeightDesign2 if i != j
     if(i != j and j in nodesObjects[i].neighbors):
         ans = 1 - WeightDesign2(i, i, nodesObjects, num_nodes, Q_Bar)
         ans = (ans/np.absolute(len(nodesObjects[i].neighbors)))
         return ans
-    #Weighted average design 1 if i == j
+    #WeightDesign2 design 2 if i == j
     elif (i == j):
         Vi = V_t(nodesObjects, i, Q_Bar)
         if(Vi == 0):
-            return 0.0001
+            return 0
         ans = (c2W/Vi)
         return ans
     else:
-        return 0.0001
+        return 0
 
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     WeightDesign1()
@@ -251,16 +254,6 @@ def WeightDesign1(i, j, nodesObjects, num_nodes, Q_Bar):
 
     cv = 0.001
     ris = 1.6
-    #c1W = 0
-
-    # ni = len(nodesObjects[i].neighbors)
-    # ni = ni - 1  
-
-    # if (ni == 0) : 
-    #     c1W = ((0.01)*(2*cv)/((ris**2)*(num_nodes-1)))
-    # else:
-    #     c1W = ((0.01)*(2*cv)/((ris**2)*(np.absolute(ni))))
-    #c1W = ((0.01)*(2*cv)/((ris**2)*(num_nodes-1)))
     Equalsum = 0
 
     #Weighted average design 1 if i != j
@@ -273,7 +266,7 @@ def WeightDesign1(i, j, nodesObjects, num_nodes, Q_Bar):
         Vj = V_t(nodesObjects, j, Q_Bar)
 
         if(Vi == 0 or Vj == 0):
-            return 0.0001
+            return 0
 
         else:
             return (c1W/(Vi +Vj))
@@ -286,7 +279,7 @@ def WeightDesign1(i, j, nodesObjects, num_nodes, Q_Bar):
 
         return 1 - Equalsum
     else:
-        return 0.0001
+        return 0
 
 
 # ----------------------------------------------------------------------------
@@ -316,6 +309,8 @@ def V_t(nodesObjects, i, Q_Bar):
 # PURPOSE:           Displays Plot for nodes
 # -----------------------------------------------------------------------------
 def DisplayNodesGraph(E_Values, X_Values, it, FileName):
+
+    print("Test")
 
     for t, item in enumerate(E_Values, start=0):
         E_Values[t] = X_Values[t] - E_Values[t]
