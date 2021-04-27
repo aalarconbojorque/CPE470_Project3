@@ -135,8 +135,8 @@ def main():
             nodesObjects[i].position = new_NodePos +  nodesObjects[i].position
             nodesObjects[i].FindyourNeighbors(nodesObjects, r)
         
-    DisplayScatterPlot(nodesObjects, X_Values, it)
-    DisplayNodesGraph(E_Values, X_Values, it)
+    DisplayScatterPlot(nodesObjects, X_Values, it, 'WeightedDesign1_NodesScatterPlot.png')
+    DisplayNodesGraph(E_Values, X_Values, it, 'WeightedDesign1_NodesDistance.png')
 
 
 
@@ -212,7 +212,7 @@ def V_t(nodesObjects, i, Q_Bar):
 # FUNCTION NAME:     DisplayNodesGraph()
 # PURPOSE:           Displays Plot for nodes
 # -----------------------------------------------------------------------------
-def DisplayNodesGraph(E_Values, X_Values, it):
+def DisplayNodesGraph(E_Values, X_Values, it, FileName):
 
     for t, item in enumerate(E_Values, start=0):
         E_Values[t] = X_Values[t] - E_Values[t]
@@ -231,14 +231,15 @@ def DisplayNodesGraph(E_Values, X_Values, it):
     #plt.title("Average Comparison")  
     plt.xlabel("Iterations")
     plt.ylabel("Value")
-    plt.savefig('WeightedDesign1_NodesDistance.png') 
+
+    plt.savefig(FileName) 
     plt.show()
 
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     DisplayScatterPlot()
 # PURPOSE:           Displays Scatter Plot for measurements
 # -----------------------------------------------------------------------------
-def DisplayScatterPlot(nodesObjects, X_Values, it):
+def DisplayScatterPlot(nodesObjects, X_Values, it, FileName):
 
     x_a = []
     y_a = []
@@ -264,7 +265,8 @@ def DisplayScatterPlot(nodesObjects, X_Values, it):
     plt.ylabel("Value")
     plt.xticks(x_a)
     plt.legend(loc="best")
-    plt.savefig('WeightedDesign1_NodesScatterPlot.png') 
+
+    plt.savefig(FileName)  
     plt.show()
 
 
