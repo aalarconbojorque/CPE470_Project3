@@ -1,6 +1,6 @@
 # -----------------------------------------------------------------------------
-# FILE NAME:         proj3.py
-# USAGE:             python3 proj3.py
+# FILE NAME:         WeightedAverageConsensus.py
+# USAGE:             python3 WeightedAverageConsensus.py
 # NOTES:             Requires matplotlib and numpy installation
 #                    Requires networkx installation
 #                    Requires Python3
