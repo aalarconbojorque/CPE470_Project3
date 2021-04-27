@@ -19,6 +19,7 @@ import networkx as nx
 import numpy as np
 import math
 import random
+import copy
 
 #Class that represent a single graph node
 class GraphNode:
@@ -62,6 +63,9 @@ def main():
     for i, item in enumerate(nodesObjects, start=0):
         nodesObjects[i].FindyourNeighbors(nodesObjects, r)
 
+    #Copy node Objects
+    InitalNodeObjects = copy.deepcopy(nodesObjects)
+
     #Single Cell Location, calc QBAR
     Cell_Y_Sum = 0
     Cell_X_Sum = 0
@@ -89,7 +93,7 @@ def main():
     nodes_va0 = nodes_va  
 
     #Display inital graph
-    DisplayGraph(nodesObjects, Q_Bar)
+    DisplayGraph(nodesObjects, Q_Bar, "Graph.png")
 
     #Initalize x(t) array for measurement
     X_Values = []
@@ -128,19 +132,116 @@ def main():
             X_Values[t][i] =  val1
 
             #Compute weighted average
-            E_Values[t][i] = ((iiWeightComp * X_Values[t-1][i]) /(iiWeightComp))
+            #np.seterr(divide='ignore', invalid='ignore')
+            PossibleNan = ((iiWeightComp * X_Values[t-1][i]) /(iiWeightComp))
+            if(math.isnan(PossibleNan)):
+                print("NAN CORRECTED")
+                out_num = np.nan_to_num(PossibleNan)
+                E_Values[t][i] = out_num
+            
+            else:
+                E_Values[t][i] = PossibleNan
 
             #Move current node towards cell
             new_NodePos =  Q_Bar - nodesObjects[i].position
             nodesObjects[i].position = new_NodePos +  nodesObjects[i].position
             nodesObjects[i].FindyourNeighbors(nodesObjects, r)
         
-    DisplayScatterPlot(nodesObjects, X_Values, it, 'WeightedDesign1_NodesScatterPlot.png')
-    DisplayNodesGraph(E_Values, X_Values, it, 'WeightedDesign1_NodesDistance.png')
+    DisplayScatterPlot(nodesObjects, X_Values, it, 'WeightedDesign1_NodesScatterPlotDP.png')
+    DisplayNodesGraph(E_Values, X_Values, it, 'WeightedDesign1_NodesDistanceDP.png')
 
+    # Weight Design 2
+    #--------------------------------------------------------------------------------------------------------------------------
+    it = 40
+    #Display inital graph
+    DisplayGraph(InitalNodeObjects, Q_Bar, "Graph2.png")
 
+    #Reassign inital node object
+    nodesObjects = copy.deepcopy(InitalNodeObjects)
+
+    #Initalize x(t) and E(t) array for measurement
+    X2_Values = []
+    E2_Values = []
+    for t in range(1, it):
+        X2_Values.insert(0, (0 * np.ones((num_nodes, 1))) + \
+        (1 * np.ones((num_nodes, 1))))
+
+        E2_Values.insert(0, (0 * np.ones((num_nodes, 1))) + \
+        (1 * np.ones((num_nodes, 1))))
+
+    #Insert initial measurement
+    nodes_initial = nodes_va0
+    X2_Values.insert(0, nodes_initial)
+    E2_Values.insert(0, nodes_initial)
+    summat = 0
+
+    for t in range(1, it):
+
+        #For all nodes
+        for i, item in enumerate(nodesObjects, start=0):
+
+            #Reset summation of neighbor weights
+            summat = 0
+
+            #Summation for all neighbors of node i
+            for j, item in enumerate(nodesObjects[i].neighbors, start=0):
+                summat = summat + (WeightDesign2(i, nodesObjects[i].neighbors[j] , nodesObjects, num_nodes, Q_Bar) * X2_Values[t-1][nodesObjects[i].neighbors[j]])
+
+            #Compute weight for ii
+            iiWeightComp = WeightDesign2(i,i, nodesObjects, num_nodes, Q_Bar)
+            val1 =  iiWeightComp * float(X2_Values[t-1][i]) + summat
+            
+            #Assign next measurment
+            X2_Values[t][i] =  val1
+
+            #Compute weighted average
+            #np.seterr(divide='ignore', invalid='ignore')
+
+            PossibleNan = ((iiWeightComp * X_Values[t-1][i]) /(iiWeightComp))
+            if(math.isnan(PossibleNan)):
+                print("NAN CORRECTED")
+                out_num = np.nan_to_num(PossibleNan)
+                E_Values[t][i] = out_num
+            
+            else:
+                E_Values[t][i] = PossibleNan
+
+            #Move current node towards cell
+            new_NodePos =  Q_Bar - nodesObjects[i].position
+            nodesObjects[i].position = new_NodePos +  nodesObjects[i].position
+            nodesObjects[i].FindyourNeighbors(nodesObjects, r)
+        
+    DisplayScatterPlot(nodesObjects, X2_Values, it, 'WeightedDesign2_NodesScatterPlotDP.png')
+    DisplayNodesGraph(E2_Values, X2_Values, it, 'WeightedDesign2_NodesDistanceDP.png')
 
     print("Data ")
+
+# ----------------------------------------------------------------------------
+# FUNCTION NAME:     WeightDesign2()
+# PURPOSE:           Calculate weight design 1 given a node i and j
+# -----------------------------------------------------------------------------
+def WeightDesign2(i, j, nodesObjects, num_nodes, Q_Bar):
+
+    cv = 0.001
+    ris = 1.6
+    c2W = (0.01)*(cv/ris**2)
+
+    Equalsum = 0
+
+    #WeightDesign2
+    if(i != j and j in nodesObjects[i].neighbors):
+        ans = 1 - WeightDesign2(i, i, nodesObjects, num_nodes, Q_Bar)
+        ans = (ans/np.absolute(len(nodesObjects[i].neighbors)))
+        return ans
+    #Weighted average design 1 if i == j
+    elif (i == j):
+        Vi = V_t(nodesObjects, i, Q_Bar)
+        if(Vi == 0):
+            return 0.0001
+        ans = (c2W/Vi)
+        return ans
+    else:
+        return 0.0001
 
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     WeightDesign1()
@@ -150,40 +251,42 @@ def WeightDesign1(i, j, nodesObjects, num_nodes, Q_Bar):
 
     cv = 0.001
     ris = 1.6
-    c1W = 0
+    #c1W = 0
 
-    ni = len(nodesObjects[i].neighbors)
-    ni = ni - 1  
+    # ni = len(nodesObjects[i].neighbors)
+    # ni = ni - 1  
 
-    if (ni == 0) : 
-        c1W = ((0.01)*(2*cv)/((ris**2)*(num_nodes-1)))
-    else:
-        c1W = ((0.01)*(2*cv)/((ris**2)*(np.absolute(ni))))
-
+    # if (ni == 0) : 
+    #     c1W = ((0.01)*(2*cv)/((ris**2)*(num_nodes-1)))
+    # else:
+    #     c1W = ((0.01)*(2*cv)/((ris**2)*(np.absolute(ni))))
+    #c1W = ((0.01)*(2*cv)/((ris**2)*(num_nodes-1)))
     Equalsum = 0
 
     #Weighted average design 1 if i != j
-    if(i != j):
-
+    if(i != j and j in nodesObjects[i].neighbors):
+        
+        ni = len(nodesObjects[i].neighbors)
+        ni = ni - 1
+        c1W = ((0.01)*(2*cv)/((ris**2)*(np.absolute(ni))))
         Vi = V_t(nodesObjects, i, Q_Bar)
         Vj = V_t(nodesObjects, j, Q_Bar)
 
         if(Vi == 0 or Vj == 0):
-            return 0
+            return 0.0001
 
         else:
             return (c1W/(Vi +Vj))
 
     #Weighted average design 1 if i == j
-    else:
+    elif (i == j):
         #Calculate weights for each neighobr of node i, sum them
         for k, item in enumerate(nodesObjects[i].neighbors, start=0):
-            if(i != nodesObjects[i].neighbors[k]):
                 Equalsum = Equalsum + WeightDesign1(i, nodesObjects[i].neighbors[k], nodesObjects, num_nodes, Q_Bar)
-            else:
-                Equalsum = Equalsum
 
         return 1 - Equalsum
+    else:
+        return 0.0001
 
 
 # ----------------------------------------------------------------------------
@@ -226,13 +329,13 @@ def DisplayNodesGraph(E_Values, X_Values, it, FileName):
         for t in range(3, it - 1):
             x_a.append(t)
             y_a.append(E_Values[t][i])
-        plt.plot(x_a, y_a)
+        plt.plot(x_a, y_a, label=str(i))
 
     #plt.title("Average Comparison")  
     plt.xlabel("Iterations")
     plt.ylabel("Value")
-
-    plt.savefig(FileName) 
+    plt.legend(loc="best")
+    plt.savefig(FileName, dpi=1200) 
     plt.show()
 
 # ----------------------------------------------------------------------------
@@ -266,7 +369,7 @@ def DisplayScatterPlot(nodesObjects, X_Values, it, FileName):
     plt.xticks(x_a)
     plt.legend(loc="best")
 
-    plt.savefig(FileName)  
+    plt.savefig(FileName, dpi=1200)  
     plt.show()
 
 
@@ -274,7 +377,7 @@ def DisplayScatterPlot(nodesObjects, X_Values, it, FileName):
 # FUNCTION NAME:     DisplayGraph()
 # PURPOSE:           Displays a graph give the nodes and neighbors
 # -----------------------------------------------------------------------------
-def DisplayGraph(nodesObjects, Q_Bar):
+def DisplayGraph(nodesObjects, Q_Bar, FileName):
 
     # Create graph object
     G = nx.Graph()
@@ -304,7 +407,7 @@ def DisplayGraph(nodesObjects, Q_Bar):
 
     # Draw graph object
     nx.draw(G, nx.get_node_attributes(G, 'pos'),
-            with_labels=False, node_size=200, node_color=color_map)
+            with_labels=True, node_size=200, node_color=color_map)
 
     # Add x and y axis ticks and labels
     limits = plt.axis('on')
@@ -312,7 +415,7 @@ def DisplayGraph(nodesObjects, Q_Bar):
     plt.xlabel('X (pos)')
     plt.ylabel('Y (pos)')
     plt.title("10 Graph nodes")
-    plt.savefig('GraphNodes.png') 
+    plt.savefig(FileName, dpi=1200) 
     plt.show()
 
 
