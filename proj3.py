@@ -11,6 +11,7 @@
 # Andy Alarcon       04-23-2021     1.0 ... Setup dev environment, imported NumPy
 # Andy Alarcon       04-25-2021     1.1 ... imported matpotlib and networkx, created graph display
 # Andy Alarcon       04-26-2021     1.1 ... implemented weight design 1, graphs for average and measurements
+# Andy Alarcon       04-27-2021     1.1 ... adjusted graphs
 # -----------------------------------------------------------------------------
 
 import matplotlib.pyplot as plt
@@ -46,11 +47,12 @@ def main():
     nodes = np.random.randn(num_nodes, n)
     #Node object array
     nodesObjects = []
+    #Iterations
+    it = 500
 
     # Add measurment for each node yi = theta_t + v_i
     nodes_va = (50 * np.ones((num_nodes, 1))) + \
         (1 * np.random.randn(num_nodes, 1))
-    nodes_va0 = nodes_va  # Save inital measurments
 
     #Populate node object array
     for i, item in enumerate(nodes, start=0):
@@ -59,7 +61,6 @@ def main():
     #Populate node neighbors
     for i, item in enumerate(nodesObjects, start=0):
         nodesObjects[i].FindyourNeighbors(nodesObjects, r)
-
 
     #Single Cell Location, calc QBAR
     Cell_Y_Sum = 0
@@ -71,13 +72,29 @@ def main():
     Cell_X_Sum = (1/num_nodes) * Cell_X_Sum
     Q_Bar = np.array([Cell_X_Sum, Cell_Y_Sum])
 
+    #Assign initial measurement weight 1 and 2
+    cv = 0.01
+    rs = 1.6
+    v = 0
+    n = 0
+    F = 50
+    for i, item in enumerate(nodes_va, start=0):
+        v = ((np.linalg.norm(nodesObjects[i].position-Q_Bar)**2)+cv)/(rs**2)
+        n = np.random.normal(0.0,v)
+        nodes_va[i] = F + n
+        v = 0
+        n = 0
+
+    # Save inital measurments
+    nodes_va0 = nodes_va  
+
     #Display inital graph
     DisplayGraph(nodesObjects, Q_Bar)
 
     #Initalize x(t) array for measurement
     X_Values = []
     E_Values = []
-    for t in range(1, 80):
+    for t in range(1, it):
         X_Values.insert(0, (0 * np.ones((num_nodes, 1))) + \
         (1 * np.ones((num_nodes, 1))))
 
@@ -90,21 +107,8 @@ def main():
     E_Values.insert(0, nodes_initial)
     summat = 0
 
-    for i, item in enumerate(E_Values[0], start=0):
-        weighi = WeightDesign1(i, i , nodesObjects, num_nodes, Q_Bar)
-        print("Before : ", E_Values[0][i])
-        E_Values[0][i] = (weighi * nodes_initial[i] / weighi)
-        print("After : ", E_Values[0][i])
-
-    asum = 0
-    bsum = 0
-    for i, item in enumerate(E_Values[0], start=0):
-        asum = asum +  E_Values[0][i]
-        bsum = bsum +  X_Values[0][i]
-
-    cusm = bsum - asum
-    #Computer in t range
-    for t in range(1, 80):
+    
+    for t in range(1, it):
 
         #For all nodes
         for i, item in enumerate(nodesObjects, start=0):
@@ -119,7 +123,6 @@ def main():
             #Compute weight for ii
             iiWeightComp = WeightDesign1(i,i, nodesObjects, num_nodes, Q_Bar)
             val1 =  iiWeightComp * float(X_Values[t-1][i]) + summat
-
             
             #Assign next measurment
             X_Values[t][i] =  val1
@@ -127,62 +130,13 @@ def main():
             #Compute weighted average
             E_Values[t][i] = ((iiWeightComp * X_Values[t-1][i]) /(iiWeightComp))
 
-            #E_Values[t][i] = X_Values[t][i] - E_Values[t][i]
-
-
             #Move current node towards cell
             new_NodePos =  Q_Bar - nodesObjects[i].position
             nodesObjects[i].position = new_NodePos +  nodesObjects[i].position
             nodesObjects[i].FindyourNeighbors(nodesObjects, r)
         
-
-    
-    
-
-
-
-
-
-
-    # for i, item in enumerate(nodes_va0, start=0):
-    #     print(nodes_va0[i])
-
-    # print("EF")
-    # for i, item in enumerate(X_Values[79], start=0):
-    #     print(X_Values[79][i])
-
-    #DisplayGraph(nodesObjects, Q_Bar)
-
-    DisplayScatterPlot(nodesObjects, X_Values)
-
-    for t, item in enumerate(E_Values, start=0):
-        E_Values[t] = X_Values[t] - E_Values[t]
-
-    x_a = []
-    y_a = []
-
-    # for t, item in enumerate(E_Values, start=0):
-    #     for i, item in enumerate(E_Values[t], start=0):
-    #          y_a = E_Values[t][i]
-
-    for i, item in enumerate(E_Values[0], start=0):
-        y_a = []
-        x_a = []
-        for t, item in enumerate(E_Values, start=0):
-            x_a.append(t)
-            y_a.append(E_Values[t][i])
-            #print("Node :", i , " at time " , t, "Value ", E_Values[t][i])
-        plt.plot(x_a, y_a)
-
-
-
-
-    plt.title("Average Comparison")
-   
-    plt.xlabel("Iterations")
-    plt.ylabel("Value")
-  
-    plt.show()
+    DisplayScatterPlot(nodesObjects, X_Values, it)
+    DisplayNodesGraph(E_Values, X_Values, it)
 
 
 
@@ -196,8 +150,16 @@ def WeightDesign1(i, j, nodesObjects, num_nodes, Q_Bar):
 
     cv = 0.001
     ris = 1.6
+    c1W = 0
 
-    c1W = ((1/2)*(2*cv)/((ris**2)*(num_nodes-1)))
+    ni = len(nodesObjects[i].neighbors)
+    ni = ni - 1  
+
+    if (ni == 0) : 
+        c1W = ((0.01)*(2*cv)/((ris**2)*(num_nodes-1)))
+    else:
+        c1W = ((0.01)*(2*cv)/((ris**2)*(np.absolute(ni))))
+
     Equalsum = 0
 
     #Weighted average design 1 if i != j
@@ -246,12 +208,37 @@ def V_t(nodesObjects, i, Q_Bar):
     else :
         return 0
 
+# ----------------------------------------------------------------------------
+# FUNCTION NAME:     DisplayNodesGraph()
+# PURPOSE:           Displays Plot for nodes
+# -----------------------------------------------------------------------------
+def DisplayNodesGraph(E_Values, X_Values, it):
+
+    for t, item in enumerate(E_Values, start=0):
+        E_Values[t] = X_Values[t] - E_Values[t]
+
+    x_a = []
+    y_a = []
+
+    for i, item in enumerate(E_Values[0], start=0):
+        y_a = []
+        x_a = []
+        for t in range(3, it - 1):
+            x_a.append(t)
+            y_a.append(E_Values[t][i])
+        plt.plot(x_a, y_a)
+
+    #plt.title("Average Comparison")  
+    plt.xlabel("Iterations")
+    plt.ylabel("Value")
+    plt.savefig('WeightedDesign1_NodesDistance.png') 
+    plt.show()
 
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     DisplayScatterPlot()
 # PURPOSE:           Displays Scatter Plot for measurements
 # -----------------------------------------------------------------------------
-def DisplayScatterPlot(nodesObjects, X_Values):
+def DisplayScatterPlot(nodesObjects, X_Values, it):
 
     x_a = []
     y_a = []
@@ -268,15 +255,16 @@ def DisplayScatterPlot(nodesObjects, X_Values):
 
     for i, item in enumerate(nodesObjects, start=0):
         x_a.append(i)
-        y_a.append(X_Values[79][i])
+        y_a.append(X_Values[it - 1][i])
 
-    plt.title("Measurements Comparison")
+    #plt.title("Measurements Comparison")
     plt.scatter(x_a, y_a, label="Final Measurement")
     plt.plot(x_a, y_a)
     plt.xlabel("10 nodes")
     plt.ylabel("Value")
     plt.xticks(x_a)
     plt.legend(loc="best")
+    plt.savefig('WeightedDesign1_NodesScatterPlot.png') 
     plt.show()
 
 
@@ -321,8 +309,8 @@ def DisplayGraph(nodesObjects, Q_Bar):
     ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
     plt.xlabel('X (pos)')
     plt.ylabel('Y (pos)')
-
     plt.title("10 Graph nodes")
+    plt.savefig('GraphNodes.png') 
     plt.show()
 
 
