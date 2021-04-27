@@ -11,7 +11,7 @@
 # Andy Alarcon       04-23-2021     1.0 ... Setup dev environment, imported NumPy
 # Andy Alarcon       04-25-2021     1.1 ... imported matpotlib and networkx, created graph display
 # Andy Alarcon       04-26-2021     1.1 ... implemented weight design 1, graphs for average and measurements
-# Andy Alarcon       04-27-2021     1.1 ... adjusted graphs
+# Andy Alarcon       04-27-2021     1.1 ... adjusted graphs, added weight design 2
 # -----------------------------------------------------------------------------
 
 import matplotlib.pyplot as plt
@@ -95,6 +95,10 @@ def main():
     #Display inital graph
     DisplayGraph(nodesObjects, Q_Bar, "Graph.png")
 
+
+    # Weight Design 1
+    #--------------------------------------------------------------------------------------------------------------------------
+
     #Initalize x(t) array for measurement
     X_Values = []
     E_Values = []
@@ -130,13 +134,13 @@ def main():
             
             #Assign next measurment
             if(math.isnan(val1)):
-                print("NAN a")
                 out_num = np.nan_to_num(val1)
                 X_Values[t][i] =  out_num
             else:
                 X_Values[t][i] = val1
 
-            #Compute weighted average
+            #Compute weighted average, correct if becomes nan        
+            np.seterr(divide='ignore', invalid='ignore')
             PossibleNan = ((iiWeightComp * X_Values[t-1][i]) /(iiWeightComp))
             if(math.isnan(PossibleNan)):
                 out_num = np.nan_to_num(PossibleNan)
@@ -150,8 +154,8 @@ def main():
             nodesObjects[i].position = new_NodePos +  nodesObjects[i].position
             nodesObjects[i].FindyourNeighbors(nodesObjects, r)
         
-    DisplayScatterPlot(nodesObjects, X_Values, it, 'WeightedDesign1_NodesScatterPlotDP.png')
-    DisplayNodesGraph(E_Values, X_Values, it, 'WeightedDesign1_NodesDistanceDP.png')
+    DisplayScatterPlot(nodesObjects, X_Values, it, 'WeightedDesign1_NodesScatterPlot.png')
+    DisplayNodesGraph(E_Values, X_Values, it, 'WeightedDesign1_NodesDistance.png')
 
     # Weight Design 2
     #--------------------------------------------------------------------------------------------------------------------------
@@ -198,9 +202,8 @@ def main():
             #Assign next measurment
             X2_Values[t][i] =  val1
 
-            #Compute weighted average
-            #np.seterr(divide='ignore', invalid='ignore')
-
+            #Compute weighted average, correct if becomes nan        
+            np.seterr(divide='ignore', invalid='ignore')
             PossibleNan = ((iiWeightComp * X2_Values[t-1][i]) /(iiWeightComp))
             if(math.isnan(PossibleNan)):
                 out_num = np.nan_to_num(PossibleNan)
@@ -214,10 +217,10 @@ def main():
             nodesObjects[i].position = new_NodePos +  nodesObjects[i].position
             nodesObjects[i].FindyourNeighbors(nodesObjects, r)
         
-    DisplayScatterPlot(nodesObjects, X2_Values, it, 'WeightedDesign2_NodesScatterPlotDP.png')
-    DisplayNodesGraph(E2_Values, X2_Values, it, 'WeightedDesign2_NodesDistanceDP.png')
+    DisplayScatterPlot(nodesObjects, X2_Values, it, 'WeightedDesign2_NodesScatterPlot.png')
+    DisplayNodesGraph(E2_Values, X2_Values, it, 'WeightedDesign2_NodesDistance.png')
 
-    print("Data ")
+    print("Graph images for weighted design 1 and 2 created")
 
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     WeightDesign2()
@@ -310,8 +313,6 @@ def V_t(nodesObjects, i, Q_Bar):
 # -----------------------------------------------------------------------------
 def DisplayNodesGraph(E_Values, X_Values, it, FileName):
 
-    print("Test")
-
     for t, item in enumerate(E_Values, start=0):
         E_Values[t] = X_Values[t] - E_Values[t]
 
@@ -329,9 +330,10 @@ def DisplayNodesGraph(E_Values, X_Values, it, FileName):
     #plt.title("Average Comparison")  
     plt.xlabel("Iterations")
     plt.ylabel("Value")
-    plt.legend(loc="best")
+    plt.legend(loc="upper right")
     plt.savefig(FileName, dpi=1200) 
     plt.show()
+    plt.close()
 
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     DisplayScatterPlot()
@@ -398,7 +400,7 @@ def DisplayGraph(nodesObjects, Q_Bar, FileName):
         if node == "C":
             color_map.append('red')
         else:
-            color_map.append('#000099')
+            color_map.append('#ADD8E6')
 
     # Draw graph object
     nx.draw(G, nx.get_node_attributes(G, 'pos'),
