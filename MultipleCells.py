@@ -56,7 +56,7 @@ def main():
     #Input Scalar Field values 25X25 matrix
     r, c = (25, 25) 
     Cells = [[0 for i in range(c)] for j in range(r)]  
-    rowVal = 0
+    rowVal = 24
     ColVal = 0
     file = open('Scalar_Field_data.txt','r', encoding='utf-16-le')
     lines = file.readlines()
@@ -67,14 +67,21 @@ def main():
             Cells[rowVal][ColVal] = float(col)
             ColVal = ColVal + 1
         ColVal = 0
-        rowVal = rowVal + 1
+        rowVal = rowVal - 1
+
 
     row_labels = range(r)
     col_labels = range(c)
-    plt.matshow(Cells)
+    plt.matshow(Cells, extent=[0, 25, 25, 0])
     plt.xticks(range(c), col_labels)
     plt.yticks(range(r), row_labels)
+    plt.colorbar()
+    figure = plt.gcf()
+    figure.set_size_inches(9, 9)
+    plt.grid(color="black")
+    plt.savefig("Test.png", dpi=1200) 
     plt.show()
+
 
     print("Graph images for weighted design 1 and 2 created")
 
