@@ -150,9 +150,6 @@ def main():
             else:
                 E_Values[t][i] = PossibleNan
 
-            print(t)
-            print(X_Values[t][i], " - ", E_Values[t][i]," = ",  X_Values[t][i] - E_Values[t][i])
-
             #Move current node towards cell
             #Compute relative y pos 
             yrv = Q_Bar[1] - nodesObjects[i].position[1]
@@ -220,8 +217,6 @@ def main():
 
             #Compute weighted average, correct if becomes nan        
             E2_Values[t][i] = ((iiWeightComp * X2_Values[t-1][i]) /(iiWeightComp))
-            print(t)
-            print(val1, " - ", E2_Values[t][i]," = ",  val1 - E2_Values[t][i])
 
             #Move current node towards cell
             #Compute relative y pos 
@@ -257,7 +252,6 @@ def WeightDesign2(i, j, nodesObjects, num_nodes, Q_Bar):
     c2W = (0.5)*((cv)/(ris**2))
 
     Equalsum = 0
-    print(len(nodesObjects[i].neighbors))
     #WeightDesign2 if i != j
     if(i != j and j in nodesObjects[i].neighbors):
         ans = 1 - WeightDesign2(i, i, nodesObjects, num_nodes, Q_Bar)
