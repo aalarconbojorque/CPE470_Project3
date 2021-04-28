@@ -69,6 +69,12 @@ def main():
         ColVal = 0
         rowVal = rowVal + 1
 
+    row_labels = range(r)
+    col_labels = range(c)
+    plt.matshow(Cells)
+    plt.xticks(range(c), col_labels)
+    plt.yticks(range(r), row_labels)
+    plt.show()
 
     print("Graph images for weighted design 1 and 2 created")
 
