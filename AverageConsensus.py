@@ -38,8 +38,8 @@ class GraphNode:
 
 
 def main():
-    r = 1  # Set Communication Range
-    num_nodes = 50  # Randomly generated nodes
+    r = 2  # Set Communication Range
+    num_nodes = 10  # Randomly generated nodes
     delta_t_update = 0.008
     n = 2  # Number of dimensions
     #Node positions
@@ -47,7 +47,7 @@ def main():
     #Node object array
     nodesObjects = []
     #Iterations
-    it = 80
+    it = 40
 
     # Add measurment for each node yi = theta_t + v_i
     nodes_va = (50 * np.ones((num_nodes, 1))) + \
@@ -100,7 +100,10 @@ def main():
     E_Values.insert(0, nodes_initial)
     summat = 0
 
-    
+    for i, item in enumerate(E_Values[0], start=0):
+        weighii =  MetropolisWeightDesign(i,i, nodesObjects, num_nodes, Q_Bar)
+        E_Values[0][i] = ((weighii * X_Values[0][i]) /(weighii)) 
+
     for t in range(1, it):
 
         #For all nodes
@@ -265,7 +268,7 @@ def V_t(nodesObjects, i, Q_Bar):
 
     #Calculate noise variance
     cv = 0.001
-    ris = 1.6
+    ris = 2
 
     Node_Pos = nodesObjects[i].position
     Distance = Node_Pos - Q_Bar
@@ -302,7 +305,7 @@ def DisplayNodesGraph(E_Values, X_Values, it, FileName):
     #plt.title("Average Comparison")  
     plt.xlabel("Iterations")
     plt.ylabel("Value")
-    #plt.legend(loc="upper right")
+    plt.legend(loc="upper right")
     plt.savefig(FileName, dpi=1200) 
     plt.show()
     plt.close()
