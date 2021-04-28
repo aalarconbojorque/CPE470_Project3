@@ -10,8 +10,9 @@
 # ----------------   -----------    ---------------
 # Andy Alarcon       04-23-2021     1.0 ... Setup dev environment, imported NumPy
 # Andy Alarcon       04-25-2021     1.1 ... imported matpotlib and networkx, created graph display
-# Andy Alarcon       04-26-2021     1.1 ... implemented weight design 1, graphs for average and measurements
-# Andy Alarcon       04-27-2021     1.1 ... adjusted graphs, added weight design 2
+# Andy Alarcon       04-26-2021     1.2 ... implemented weight design 1, graphs for average and measurements
+# Andy Alarcon       04-27-2021     1.3 ... adjusted graphs, added weight design 2
+# Andy Alarcon       04-28-2021     1.3 ... Fixed bug that provided inaccurate neighbors
 # -----------------------------------------------------------------------------
 
 import matplotlib.pyplot as plt
@@ -29,7 +30,7 @@ class GraphNode:
         self.neighbors = neighbors
 
     def FindyourNeighbors(self, nodesObjects, r):
-
+      self.neighbors = []  
       for j, item in enumerate(nodesObjects, start=0):
             # Calculate distance between self and j
             neighborDistance = np.sqrt(np.square(nodesObjects[j].position[0] - self.position[0]) + np.square(nodesObjects[j].position[1] - self.position[1]))
@@ -149,10 +150,25 @@ def main():
             else:
                 E_Values[t][i] = PossibleNan
 
+            print(t)
+            print(X_Values[t][i], " - ", E_Values[t][i]," = ",  X_Values[t][i] - E_Values[t][i])
+
             #Move current node towards cell
-            new_NodePos =  Q_Bar - nodesObjects[i].position
-            nodesObjects[i].position = new_NodePos +  nodesObjects[i].position
-            nodesObjects[i].FindyourNeighbors(nodesObjects, r)
+            #Compute relative y pos 
+            yrv = Q_Bar[1] - nodesObjects[i].position[1]
+            #Compute relative x pos 
+            xrv = Q_Bar[0] - nodesObjects[i].position[0]
+            #compute direction
+            Hrv = np.arctan2(yrv, xrv)
+            #Compute distance
+            Diastance = np.sqrt(np.square(Q_Bar[0] - nodesObjects[i].position[0]) + np.square(Q_Bar[1] - nodesObjects[i].position[1]))
+            if 0.1 <= Diastance <= 0.2:
+                pass
+
+            else:
+                new_NodePos = nodesObjects[i].position + (0.05 * np.array([np.cos(Hrv), np.sin(Hrv)]))
+                nodesObjects[i].position = new_NodePos
+                nodesObjects[i].FindyourNeighbors(nodesObjects, 2)
         
     DisplayScatterPlot(nodesObjects, X_Values, it, 'WeightedDesign1_NodesScatterPlot.png')
     DisplayNodesGraph(E_Values, X_Values, it, 'WeightedDesign1_NodesDistance.png')
@@ -161,8 +177,8 @@ def main():
     #--------------------------------------------------------------------------------------------------------------------------
   
     #Display inital graph
-    it = 60
-    DisplayGraph(InitalNodeObjects, Q_Bar, "Graph2.png")
+    it = 40
+    #DisplayGraph(InitalNodeObjects, Q_Bar, "Graph2.png")
 
     #Reassign inital node object
     nodesObjects = copy.deepcopy(InitalNodeObjects)
@@ -179,8 +195,8 @@ def main():
 
     #Insert initial measurement
     nodes_initial = nodes_va0
-    X2_Values.insert(0, nodes_initial)
-    E2_Values.insert(0, nodes_initial)
+    X2_Values.insert(0, nodes_va0)
+    E2_Values.insert(0, nodes_va0)
     summat = 0
 
     for t in range(1, it):
@@ -203,19 +219,27 @@ def main():
             X2_Values[t][i] =  val1
 
             #Compute weighted average, correct if becomes nan        
-            np.seterr(divide='ignore', invalid='ignore')
-            PossibleNan = ((iiWeightComp * X2_Values[t-1][i]) /(iiWeightComp))
-            if(math.isnan(PossibleNan)):
-                out_num = np.nan_to_num(PossibleNan)
-                E2_Values[t][i] = out_num
-            
-            else:
-                E2_Values[t][i] = PossibleNan
+            E2_Values[t][i] = ((iiWeightComp * X2_Values[t-1][i]) /(iiWeightComp))
+            print(t)
+            print(val1, " - ", E2_Values[t][i]," = ",  val1 - E2_Values[t][i])
 
             #Move current node towards cell
-            new_NodePos =  Q_Bar - nodesObjects[i].position
-            nodesObjects[i].position = new_NodePos +  nodesObjects[i].position
-            nodesObjects[i].FindyourNeighbors(nodesObjects, r)
+            #Compute relative y pos 
+            yrv = Q_Bar[1] - nodesObjects[i].position[1]
+            #Compute relative x pos 
+            xrv = Q_Bar[0] - nodesObjects[i].position[0]
+            #compute direction
+            Hrv = np.arctan2(yrv, xrv)
+            #Compute distance
+            Diastance = np.sqrt(np.square(Q_Bar[0] - nodesObjects[i].position[0]) + np.square(Q_Bar[1] - nodesObjects[i].position[1]))
+            if 0.1 <= Diastance <= 0.2:
+                nodesObjects[i].FindyourNeighbors(nodesObjects, r)
+
+            else:
+                new_NodePos = nodesObjects[i].position + (0.005 * np.array([np.cos(Hrv), np.sin(Hrv)]))
+                nodesObjects[i].position = new_NodePos
+                nodesObjects[i].FindyourNeighbors(nodesObjects, 2)
+
         
     DisplayScatterPlot(nodesObjects, X2_Values, it, 'WeightedDesign2_NodesScatterPlot.png')
     DisplayNodesGraph(E2_Values, X2_Values, it, 'WeightedDesign2_NodesDistance.png')
@@ -229,11 +253,11 @@ def main():
 def WeightDesign2(i, j, nodesObjects, num_nodes, Q_Bar):
 
     cv = 0.001
-    ris = 1.6
-    c2W = (0.01)*(cv/ris**2)
+    ris = 2
+    c2W = (0.5)*((cv)/(ris**2))
 
     Equalsum = 0
-
+    print(len(nodesObjects[i].neighbors))
     #WeightDesign2 if i != j
     if(i != j and j in nodesObjects[i].neighbors):
         ans = 1 - WeightDesign2(i, i, nodesObjects, num_nodes, Q_Bar)
@@ -256,7 +280,7 @@ def WeightDesign2(i, j, nodesObjects, num_nodes, Q_Bar):
 def WeightDesign1(i, j, nodesObjects, num_nodes, Q_Bar):
 
     cv = 0.001
-    ris = 1.6
+    ris = 2
     Equalsum = 0
 
     #Weighted average design 1 if i != j
@@ -264,7 +288,7 @@ def WeightDesign1(i, j, nodesObjects, num_nodes, Q_Bar):
         
         ni = len(nodesObjects[i].neighbors)
         ni = ni - 1
-        c1W = ((0.01)*(2*cv)/((ris**2)*(np.absolute(ni))))
+        c1W = ((0.9)*(2*cv)/((ris**2)*(np.absolute(ni))))
         Vi = V_t(nodesObjects, i, Q_Bar)
         Vj = V_t(nodesObjects, j, Q_Bar)
 
