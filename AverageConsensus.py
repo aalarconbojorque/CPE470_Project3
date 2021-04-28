@@ -9,7 +9,8 @@
 # Author             Date           Modification(s)
 # ----------------   -----------    ---------------
 # Andy Alarcon       04-27-2021     1.0 ... Copied code from weightedAverageConsensu.py
-# Andy Alarcon       04-28-2021     1.0 ... Implemted metropolis and average
+# Andy Alarcon       04-28-2021     1.1 ... Implemented metropolis and average
+# Andy Alarcon       04-28-2021     1.1 ... Fixed bug that provided inaccurate neighbors
 # -----------------------------------------------------------------------------
 
 import matplotlib.pyplot as plt
