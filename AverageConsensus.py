@@ -39,7 +39,7 @@ class GraphNode:
 
 def main():
     r = 2  # Set Communication Range
-    num_nodes = 10  # Randomly generated nodes
+    num_nodes = 50  # Randomly generated nodes
     delta_t_update = 0.008
     n = 2  # Number of dimensions
     #Node positions
@@ -305,7 +305,7 @@ def DisplayNodesGraph(E_Values, X_Values, it, FileName):
     #plt.title("Average Comparison")  
     plt.xlabel("Iterations")
     plt.ylabel("Value")
-    plt.legend(loc="upper right")
+    #plt.legend(loc="upper right")
     plt.savefig(FileName, dpi=1200) 
     plt.show()
     plt.close()
@@ -336,7 +336,7 @@ def DisplayScatterPlot(nodesObjects, X_Values, it, FileName):
     #plt.title("Measurements Comparison")
     plt.scatter(x_a, y_a, label="Final Measurement")
     plt.plot(x_a, y_a)
-    plt.xlabel("10 nodes")
+    plt.xlabel("50 nodes")
     plt.ylabel("Value")
     #plt.xticks(x_a)
     plt.legend(loc="best")
