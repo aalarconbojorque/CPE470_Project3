@@ -65,8 +65,10 @@ def main():
         ColVal = 0
         rowVal = rowVal - 1
 
-   # DisplayGraph(nodesObjects, np.array([5,5]), "Scalar_FieldNework.png")
+   # Define Error Array
+    Error_arr = []
 
+    print("Running Consensus Weight Design 2 ...")
     #Traverse the 25x25 matrix
     for row, item in enumerate(Cells, start=0):
 
@@ -152,15 +154,40 @@ def main():
                     Results_Cells[row][col] = X_Values[it-1][i]
                     MeasureError = Current_Error
 
+            Error_arr.append(MeasureError)
             X_Values = []
 
                 
 
-
+    DisplayPlot(Error_arr, "Error_Plot")
     GraphField(r, c, Cells, "Initial_ScalarField", "Original Map")
     GraphField(r, c, Results_Cells, "Final_ScalarField", "Built Map")
 
-    print("Graph images for weighted design 1 and 2 created")
+    print("Graphs created for scalar fields")
+
+# ----------------------------------------------------------------------------
+# FUNCTION NAME:     DisplayScatterPlot()
+# PURPOSE:           Displays Scatter Plot for measurements
+# -----------------------------------------------------------------------------
+def DisplayPlot(E_Values, FileName):
+
+    x_a = []
+    y_a = []
+
+    for i, item in enumerate(E_Values, start=0):
+        x_a.append(i)
+        y_a.append(E_Values[i])
+        #print("Cell ", i , " : ", E_Values[i])
+
+    plt.plot(x_a, y_a)
+    plt.xlabel("Number of Cells")
+    plt.ylabel("Error")
+    plt.title("Error between maps")
+    plt.ylim([-1e-15, 1e-15])
+    plt.savefig(FileName, dpi=1200)  
+    plt.show()
+
+
 
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     DisplayNodesGraph()
