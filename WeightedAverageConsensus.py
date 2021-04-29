@@ -94,7 +94,7 @@ def main():
     nodes_va0 = nodes_va  
 
     #Display inital graph
-    DisplayGraph(nodesObjects, Q_Bar, "Graph.png")
+    DisplayGraph(nodesObjects, Q_Bar, "Graph_WeightedAverage.png")
 
 
     # Weight Design 1

@@ -10,7 +10,7 @@
 # ----------------   -----------    ---------------
 # Andy Alarcon       04-29-2021     1.0 ... Copied code from WeightedAverageConsensus.py
 # Andy Alarcon       05-02-2021     1.0 ... Parsed data from .txt file
-# Andy Alarcon       05-03-2021     1.0 ... Implemented consensus for field
+# Andy Alarcon       05-03-2021     1.1 ... Implemented consensus for field
 # -----------------------------------------------------------------------------
 
 import matplotlib.pyplot as plt

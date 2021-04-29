@@ -79,7 +79,7 @@ def main():
     nodes_va0 = nodes_va  
 
     #Display inital graph
-    DisplayGraph(nodesObjects, Q_Bar, "Graph.png")
+    DisplayGraph(nodesObjects, Q_Bar, "Graph_Average.png")
 
 
     # Metropolis weight design
@@ -151,7 +151,7 @@ def main():
     # #--------------------------------------------------------------------------------------------------------------------------
   
     #Display inital graph
-    DisplayGraph(InitalNodeObjects, Q_Bar, "Graph2.png")
+    #DisplayGraph(InitalNodeObjects, Q_Bar, "Graph2.png")
 
     #Reassign inital node object
     nodesObjects = copy.deepcopy(InitalNodeObjects)
@@ -213,7 +213,7 @@ def main():
     DisplayScatterPlot(nodesObjects, X2_Values, it, 'MaxDegreeWeight_NodesScatterPlot.png')
     DisplayNodesGraph(E2_Values, X2_Values, it, 'MaxDegreeWeight_NodesDistance.png')
 
-    print("Graph images for weighted design 1 and 2 created")
+    print("Graph images for Max-degree and Metropolis weights")
 
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     MaxDegreeWeight()
