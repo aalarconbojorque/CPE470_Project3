@@ -28,7 +28,7 @@ class GraphNode:
         self.index = index
         self.position = position
         self.neighbors = neighbors
-
+    
     def FindyourNeighbors(self, nodesObjects, r):
       self.neighbors = []  
       for j, item in enumerate(nodesObjects, start=0):
