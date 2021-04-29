@@ -42,8 +42,7 @@ class GraphNode:
 
 #Class that represent a cell node
 class Cell:
-    def __init__(self, initalMeasurement):
-     
+    def __init__(self, initalMeasurement):    
         self.initalMeasurement = initalMeasurement
 
     def FindyourNeighbors(self, nodesObjects, r):
@@ -51,11 +50,16 @@ class Cell:
 
 
 def main():
-    
+    r = 8  # Set Communication Range
+    num_nodes = 10  # Randomly generated nodes
+    delta_t_update = 0.008
+    n = 2  # Number of dimensions
+    it = 80
     
     #Input Scalar Field values 25X25 matrix
     r, c = (25, 25) 
-    Cells = [[0 for i in range(c)] for j in range(r)]  
+    Cells = [[0 for i in range(c)] for j in range(r)] 
+    Results_Cells = [[0 for i in range(c)] for j in range(r)]  
     rowVal = 24
     ColVal = 0
     file = open('Scalar_Field_data.txt','r', encoding='utf-16-le')
@@ -70,6 +74,103 @@ def main():
         rowVal = rowVal - 1
 
 
+    #Set node positions between low and high-1
+    nodes = np.random.randint(low=0 , high=26, size=(num_nodes, n))
+    #Node object array
+    nodesObjects = []
+   
+    # Add measurment for each node yi = theta_t + v_i
+    nodes_va = (50 * np.ones((num_nodes, 1))) + \
+        (1 * np.random.randn(num_nodes, 1))
+    
+    #Populate node object array
+    for i, item in enumerate(nodes, start=0):
+        nodesObjects.append(GraphNode(i, np.array([nodes[i][0], nodes[i][1]]), []))
+
+    #Populate node neighbors
+    for i, item in enumerate(nodesObjects, start=0):
+        nodesObjects[i].FindyourNeighbors(nodesObjects, r)
+
+    
+
+    DisplayGraph(nodesObjects, np.array([5,5]), "Graph.png")
+
+    #Traverse the 25x25 matrix
+    for row, item in enumerate(Cells, start=0):
+
+        for col, item in enumerate(Cells[row], start=0):
+            
+            #Initial Cell Value
+            Initial_CellVal = Cells[row][col]
+            Q_Bar = np.array([row,col])
+
+            # Add measurment for each node yi = theta_t + v_i
+            nodes_va = (Initial_CellVal* np.ones((num_nodes, 1))) + \
+            (1 * np.random.randn(num_nodes, 1))
+
+            #Initalize x(t) array for measurement
+            X_Values = []
+
+            for t in range(1, it):
+                X_Values.insert(0, (0 * np.ones((num_nodes, 1))) + \
+                (1 * np.ones((num_nodes, 1))))  
+
+            X_Values.insert(0, nodes_va)
+            summat = 0
+
+            #Begin consensus
+            for t in range(1, it):
+                #For all nodes
+                for i, item in enumerate(nodesObjects, start=0):
+                    
+                    #Reset summation of neighbor weights
+                    summat = 0
+
+                    #Summation for all neighbors of node i
+                    for j, item in enumerate(nodesObjects[i].neighbors, start=0):
+                        summat = summat + (WeightDesign2(i, nodesObjects[i].neighbors[j] , nodesObjects, num_nodes, Q_Bar) * X2_Values[t-1][nodesObjects[i].neighbors[j]])
+                    
+                    #Compute weight for ii
+                    iiWeightComp = WeightDesign2(i,i, nodesObjects, num_nodes, Q_Bar)
+                    val1 =  iiWeightComp * float(X2_Values[t-1][i]) + summat
+
+                    #Assign next measurment
+                    X2_Values[t][i] =  val1
+
+                    #Move current node towards cell
+                    #Compute relative y pos 
+                    yrv = Q_Bar[1] - nodesObjects[i].position[1]
+                    #Compute relative x pos 
+                    xrv = Q_Bar[0] - nodesObjects[i].position[0]
+                    #compute direction
+                    Hrv = np.arctan2(yrv, xrv)
+                    #Compute distance
+                    Diastance = np.sqrt(np.square(Q_Bar[0] - nodesObjects[i].position[0]) + np.square(Q_Bar[1] - nodesObjects[i].position[1]))
+                    if 0.1 <= Diastance <= 0.2:
+                        nodesObjects[i].FindyourNeighbors(nodesObjects, r)
+
+                    else:
+                        new_NodePos = nodesObjects[i].position + (0.005 * np.array([np.cos(Hrv), np.sin(Hrv)]))
+                        nodesObjects[i].position = new_NodePos
+                        nodesObjects[i].FindyourNeighbors(nodesObjects, 2)
+                    
+
+
+
+
+
+
+
+    #GraphField(r, c, Cells, "Initial_ScalarField", "1st Field")
+
+    print("Graph images for weighted design 1 and 2 created")
+
+# ----------------------------------------------------------------------------
+# FUNCTION NAME:     DisplayNodesGraph()
+# PURPOSE:           Displays Plot for nodes
+# -----------------------------------------------------------------------------
+def GraphField(r, c, Cells, FileName, Title):
+
     row_labels = range(r)
     col_labels = range(c)
     plt.matshow(Cells, extent=[0, 25, 25, 0])
@@ -79,11 +180,11 @@ def main():
     figure = plt.gcf()
     figure.set_size_inches(9, 9)
     plt.grid(color="black")
-    plt.savefig("Test.png", dpi=1200) 
+    plt.title(Title)
+    plt.savefig(FileName, dpi=1200) 
     plt.show()
 
 
-    print("Graph images for weighted design 1 and 2 created")
 
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     WeightDesign2()
@@ -108,41 +209,6 @@ def WeightDesign2(i, j, nodesObjects, num_nodes, Q_Bar):
             return 0
         ans = (c2W/Vi)
         return ans
-    else:
-        return 0
-
-# ----------------------------------------------------------------------------
-# FUNCTION NAME:     WeightDesign1()
-# PURPOSE:           Calculate weight design 1 given a node i and j
-# -----------------------------------------------------------------------------
-def WeightDesign1(i, j, nodesObjects, num_nodes, Q_Bar):
-
-    cv = 0.001
-    ris = 2
-    Equalsum = 0
-
-    #Weighted average design 1 if i != j
-    if(i != j and j in nodesObjects[i].neighbors):
-        
-        ni = len(nodesObjects[i].neighbors)
-        ni = ni - 1
-        c1W = ((0.9)*(2*cv)/((ris**2)*(np.absolute(ni))))
-        Vi = V_t(nodesObjects, i, Q_Bar)
-        Vj = V_t(nodesObjects, j, Q_Bar)
-
-        if(Vi == 0 or Vj == 0):
-            return 0
-
-        else:
-            return (c1W/(Vi +Vj))
-
-    #Weighted average design 1 if i == j
-    elif (i == j):
-        #Calculate weights for each neighobr of node i, sum them
-        for k, item in enumerate(nodesObjects[i].neighbors, start=0):
-                Equalsum = Equalsum + WeightDesign1(i, nodesObjects[i].neighbors[k], nodesObjects, num_nodes, Q_Bar)
-
-        return 1 - Equalsum
     else:
         return 0
 
