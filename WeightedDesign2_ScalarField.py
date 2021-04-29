@@ -1,6 +1,6 @@
 # -----------------------------------------------------------------------------
-# FILE NAME:         WeightedAverageConsensus.py
-# USAGE:             python3 WeightedAverageConsensus.py
+# FILE NAME:         WeightedDesign2_ScalarField.py
+# USAGE:             python3 WeightedDesign2_ScalarField.py
 # NOTES:             Requires matplotlib and numpy installation
 #                    Requires networkx installation
 #                    Requires Python3
@@ -8,11 +8,9 @@
 # MODIFICATION HISTORY:
 # Author             Date           Modification(s)
 # ----------------   -----------    ---------------
-# Andy Alarcon       04-23-2021     1.0 ... Setup dev environment, imported NumPy
-# Andy Alarcon       04-25-2021     1.1 ... imported matpotlib and networkx, created graph display
-# Andy Alarcon       04-26-2021     1.2 ... implemented weight design 1, graphs for average and measurements
-# Andy Alarcon       04-27-2021     1.3 ... adjusted graphs, added weight design 2
-# Andy Alarcon       04-28-2021     1.3 ... Fixed bug that provided inaccurate neighbors
+# Andy Alarcon       04-29-2021     1.0 ... Copied code from WeightedAverageConsensus.py
+# Andy Alarcon       05-02-2021     1.0 ... Parsed data from .txt file
+# Andy Alarcon       05-03-2021     1.0 ... Implemented consensus for field
 # -----------------------------------------------------------------------------
 
 import matplotlib.pyplot as plt
@@ -38,7 +36,6 @@ class GraphNode:
             # If within range they are neighbors
             if(neighborDistance <= r and neighborDistance != 0):
                 self.neighbors.append(j)
-               # print("Node ", self.index, "->", j)
 
 
 def main():
@@ -65,16 +62,17 @@ def main():
         ColVal = 0
         rowVal = rowVal - 1
 
-   # Define Error Array
+    #Define Error Array
     Error_arr = []
 
     print("Running Consensus Weight Design 2 ...")
+    
     #Traverse the 25x25 matrix
     for row, item in enumerate(Cells, start=0):
 
         for col, item in enumerate(Cells[row], start=0):
 
-            #Set node positions between low and high-1
+            #Set node positions between low and high-1, reset nodes position
             nodes = np.random.randint(low=0 , high=26, size=(num_nodes, n))
             #Node object array
             nodesObjects = []
@@ -146,7 +144,7 @@ def main():
             
 
             MeasureError = 100
-            #Take the closest measurment from all the nodes
+            #Take the closest measurment at last measurement from all the nodes
             for i, item in enumerate(X_Values[it-1], start=0):
                 Current_Error = Initial_CellVal - X_Values[it-1][i]
 
@@ -158,7 +156,6 @@ def main():
             X_Values = []
 
                 
-
     DisplayPlot(Error_arr, "Error_Plot")
     GraphField(r, c, Cells, "Initial_ScalarField", "Original Map")
     GraphField(r, c, Results_Cells, "Final_ScalarField", "Built Map")
@@ -166,8 +163,8 @@ def main():
     print("Graphs created for scalar fields")
 
 # ----------------------------------------------------------------------------
-# FUNCTION NAME:     DisplayScatterPlot()
-# PURPOSE:           Displays Scatter Plot for measurements
+# FUNCTION NAME:     DisplayPlot()
+# PURPOSE:           Displays Error Plot for maps
 # -----------------------------------------------------------------------------
 def DisplayPlot(E_Values, FileName):
 
@@ -177,7 +174,6 @@ def DisplayPlot(E_Values, FileName):
     for i, item in enumerate(E_Values, start=0):
         x_a.append(i)
         y_a.append(E_Values[i])
-        #print("Cell ", i , " : ", E_Values[i])
 
     plt.plot(x_a, y_a)
     plt.xlabel("Number of Cells")
@@ -207,7 +203,6 @@ def GraphField(r, c, Cells, FileName, Title):
     plt.title(Title)
     plt.savefig(FileName, dpi=1200) 
     plt.show()
-
 
 
 # ----------------------------------------------------------------------------
