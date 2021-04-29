@@ -175,7 +175,6 @@ def main():
   
     #Display inital graph
     it = 40
-    #DisplayGraph(InitalNodeObjects, Q_Bar, "Graph2.png")
 
     #Reassign inital node object
     nodesObjects = copy.deepcopy(InitalNodeObjects)
@@ -432,8 +431,6 @@ def DisplayGraph(nodesObjects, Q_Bar, FileName):
     plt.title("10 Graph nodes")
     plt.savefig(FileName, dpi=1200) 
     plt.show()
-
-
 
 
 if __name__ == "__main__":

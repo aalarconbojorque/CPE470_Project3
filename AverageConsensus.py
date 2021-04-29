@@ -391,7 +391,5 @@ def DisplayGraph(nodesObjects, Q_Bar, FileName):
     plt.show()
 
 
-
-
 if __name__ == "__main__":
     main()
