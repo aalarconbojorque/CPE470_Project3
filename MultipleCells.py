@@ -40,14 +40,6 @@ class GraphNode:
                 self.neighbors.append(j)
                # print("Node ", self.index, "->", j)
 
-#Class that represent a cell node
-class Cell:
-    def __init__(self, initalMeasurement):    
-        self.initalMeasurement = initalMeasurement
-
-    def FindyourNeighbors(self, nodesObjects, r):
-      pass
-
 
 def main():
     r = 5  # Set Communication Range
@@ -73,27 +65,7 @@ def main():
         ColVal = 0
         rowVal = rowVal - 1
 
-
-    #Set node positions between low and high-1
-    nodes = np.random.randint(low=0 , high=26, size=(num_nodes, n))
-    #Node object array
-    nodesObjects = []
-   
-    # Add measurment for each node yi = theta_t + v_i
-    nodes_va = (50 * np.ones((num_nodes, 1))) + \
-        (1 * np.random.randn(num_nodes, 1))
-    
-    #Populate node object array
-    for i, item in enumerate(nodes, start=0):
-        nodesObjects.append(GraphNode(i, np.array([nodes[i][0], nodes[i][1]]), []))
-
-    #Populate node neighbors
-    for i, item in enumerate(nodesObjects, start=0):
-        nodesObjects[i].FindyourNeighbors(nodesObjects, r)
-
-    
-
-    DisplayGraph(nodesObjects, np.array([5,5]), "Graph.png")
+   # DisplayGraph(nodesObjects, np.array([5,5]), "Scalar_FieldNework.png")
 
     #Traverse the 25x25 matrix
     for row, item in enumerate(Cells, start=0):
@@ -112,6 +84,10 @@ def main():
             #Populate node neighbors
             for i, item in enumerate(nodesObjects, start=0):
                 nodesObjects[i].FindyourNeighbors(nodesObjects, r)
+
+            #Display the inital network
+            if row == 0 and col == 0:
+                DisplayGraph(nodesObjects, "Scalar_FieldNework.png")
             
             #Initial Cell Value
             Initial_CellVal = Cells[row][col]
@@ -130,7 +106,7 @@ def main():
             X_Values.insert(0, nodes_va)
             summat = 0
 
-            #Begin consensus
+            #Begin consensus using weight design 2
             for t in range(1, it):
                 #For all nodes
                 for i, item in enumerate(nodesObjects, start=0):
@@ -167,22 +143,14 @@ def main():
                         nodesObjects[i].FindyourNeighbors(nodesObjects, 2)
             
 
-
             MeasureError = 100
-            #Take the closest measurment from all the nodes Initial_CellVal
+            #Take the closest measurment from all the nodes
             for i, item in enumerate(X_Values[it-1], start=0):
                 Current_Error = Initial_CellVal - X_Values[it-1][i]
 
                 if Current_Error <= MeasureError:
                     Results_Cells[row][col] = X_Values[it-1][i]
                     MeasureError = Current_Error
-
-            # average = np.mean(X_Values[it-1])
-
-            # if average <= 0:
-            #     Results_Cells[row][col] = 0
-            # else:    
-            #     Results_Cells[row][col] = average
 
             X_Values = []
 
@@ -268,7 +236,7 @@ def V_t(nodesObjects, i, Q_Bar):
 # FUNCTION NAME:     DisplayGraph()
 # PURPOSE:           Displays a graph give the nodes and neighbors
 # -----------------------------------------------------------------------------
-def DisplayGraph(nodesObjects, Q_Bar, FileName):
+def DisplayGraph(nodesObjects, FileName):
 
     # Create graph object
     G = nx.Graph()
@@ -278,7 +246,6 @@ def DisplayGraph(nodesObjects, Q_Bar, FileName):
     for i, item in enumerate(nodesObjects, start=0):
         G.add_node(str(i), pos=(nodesObjects[i].position[0], nodesObjects[i].position[1]))
 
-    G.add_node("C", pos=(Q_Bar[0], Q_Bar[1]))
 
     # Add edges
     for i, item in enumerate(nodesObjects, start=0):
@@ -305,7 +272,7 @@ def DisplayGraph(nodesObjects, Q_Bar, FileName):
     ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
     plt.xlabel('X (pos)')
     plt.ylabel('Y (pos)')
-    plt.title("10 Graph nodes")
+    plt.title("30 Graph nodes")
     plt.savefig(FileName, dpi=1200) 
     plt.show()
 
