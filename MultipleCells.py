@@ -50,8 +50,8 @@ class Cell:
 
 
 def main():
-    r = 8  # Set Communication Range
-    num_nodes = 10  # Randomly generated nodes
+    r = 5  # Set Communication Range
+    num_nodes = 30  # Randomly generated nodes
     delta_t_update = 0.008
     n = 2  # Number of dimensions
     it = 80
@@ -99,14 +99,26 @@ def main():
     for row, item in enumerate(Cells, start=0):
 
         for col, item in enumerate(Cells[row], start=0):
+
+            #Set node positions between low and high-1
+            nodes = np.random.randint(low=0 , high=26, size=(num_nodes, n))
+            #Node object array
+            nodesObjects = []
+                   
+            #Populate node object array
+            for i, item in enumerate(nodes, start=0):
+                nodesObjects.append(GraphNode(i, np.array([nodes[i][0], nodes[i][1]]), []))
+
+            #Populate node neighbors
+            for i, item in enumerate(nodesObjects, start=0):
+                nodesObjects[i].FindyourNeighbors(nodesObjects, r)
             
             #Initial Cell Value
             Initial_CellVal = Cells[row][col]
             Q_Bar = np.array([row,col])
 
             # Add measurment for each node yi = theta_t + v_i
-            nodes_va = (Initial_CellVal* np.ones((num_nodes, 1))) + \
-            (1 * np.random.randn(num_nodes, 1))
+            nodes_va = (Initial_CellVal* np.ones((num_nodes, 1))) 
 
             #Initalize x(t) array for measurement
             X_Values = []
@@ -128,14 +140,14 @@ def main():
 
                     #Summation for all neighbors of node i
                     for j, item in enumerate(nodesObjects[i].neighbors, start=0):
-                        summat = summat + (WeightDesign2(i, nodesObjects[i].neighbors[j] , nodesObjects, num_nodes, Q_Bar) * X2_Values[t-1][nodesObjects[i].neighbors[j]])
+                        summat = summat + (WeightDesign2(i, nodesObjects[i].neighbors[j] , nodesObjects, num_nodes, Q_Bar) * X_Values[t-1][nodesObjects[i].neighbors[j]])
                     
                     #Compute weight for ii
                     iiWeightComp = WeightDesign2(i,i, nodesObjects, num_nodes, Q_Bar)
-                    val1 =  iiWeightComp * float(X2_Values[t-1][i]) + summat
+                    val1 =  iiWeightComp * float(X_Values[t-1][i]) + summat
 
                     #Assign next measurment
-                    X2_Values[t][i] =  val1
+                    X_Values[t][i] =  val1
 
                     #Move current node towards cell
                     #Compute relative y pos 
@@ -150,18 +162,35 @@ def main():
                         nodesObjects[i].FindyourNeighbors(nodesObjects, r)
 
                     else:
-                        new_NodePos = nodesObjects[i].position + (0.005 * np.array([np.cos(Hrv), np.sin(Hrv)]))
+                        new_NodePos = nodesObjects[i].position + (0.05 * np.array([np.cos(Hrv), np.sin(Hrv)]))
                         nodesObjects[i].position = new_NodePos
                         nodesObjects[i].FindyourNeighbors(nodesObjects, 2)
-                    
+            
 
 
+            MeasureError = 100
+            #Take the closest measurment from all the nodes Initial_CellVal
+            for i, item in enumerate(X_Values[it-1], start=0):
+                Current_Error = Initial_CellVal - X_Values[it-1][i]
+
+                if Current_Error <= MeasureError:
+                    Results_Cells[row][col] = X_Values[it-1][i]
+                    MeasureError = Current_Error
+
+            # average = np.mean(X_Values[it-1])
+
+            # if average <= 0:
+            #     Results_Cells[row][col] = 0
+            # else:    
+            #     Results_Cells[row][col] = average
+
+            X_Values = []
+
+                
 
 
-
-
-
-    #GraphField(r, c, Cells, "Initial_ScalarField", "1st Field")
+    GraphField(r, c, Cells, "Initial_ScalarField", "Original Map")
+    GraphField(r, c, Results_Cells, "Final_ScalarField", "Built Map")
 
     print("Graph images for weighted design 1 and 2 created")
 
@@ -193,8 +222,8 @@ def GraphField(r, c, Cells, FileName, Title):
 def WeightDesign2(i, j, nodesObjects, num_nodes, Q_Bar):
 
     cv = 0.001
-    ris = 2
-    c2W = (0.5)*((cv)/(ris**2))
+    ris = 5
+    c2W = (0.9)*((cv)/(ris**2))
 
     Equalsum = 0
     #WeightDesign2 if i != j
@@ -221,7 +250,7 @@ def V_t(nodesObjects, i, Q_Bar):
 
     #Calculate noise variance
     cv = 0.001
-    ris = 1.6
+    ris = 5
 
     Node_Pos = nodesObjects[i].position
     Distance = Node_Pos - Q_Bar
@@ -234,69 +263,6 @@ def V_t(nodesObjects, i, Q_Bar):
         return V_i
     else :
         return 0
-
-# ----------------------------------------------------------------------------
-# FUNCTION NAME:     DisplayNodesGraph()
-# PURPOSE:           Displays Plot for nodes
-# -----------------------------------------------------------------------------
-def DisplayNodesGraph(E_Values, X_Values, it, FileName):
-
-    for t, item in enumerate(E_Values, start=0):
-        E_Values[t] = X_Values[t] - E_Values[t]
-
-    x_a = []
-    y_a = []
-
-    for i, item in enumerate(E_Values[0], start=0):
-        y_a = []
-        x_a = []
-        for t in range(3, it - 1):
-            x_a.append(t)
-            y_a.append(E_Values[t][i])
-        plt.plot(x_a, y_a, label=str(i))
-
-    #plt.title("Average Comparison")  
-    plt.xlabel("Iterations")
-    plt.ylabel("Value")
-    plt.legend(loc="upper right")
-    plt.savefig(FileName, dpi=1200) 
-    plt.show()
-    plt.close()
-
-# ----------------------------------------------------------------------------
-# FUNCTION NAME:     DisplayScatterPlot()
-# PURPOSE:           Displays Scatter Plot for measurements
-# -----------------------------------------------------------------------------
-def DisplayScatterPlot(nodesObjects, X_Values, it, FileName):
-
-    x_a = []
-    y_a = []
-
-    for i, item in enumerate(nodesObjects, start=0):
-        x_a.append(i)
-        y_a.append(X_Values[0][i])
-
-    plt.scatter(x_a, y_a, label="Inital Measurement")
-    plt.plot(x_a, y_a)
-
-    x_a = []
-    y_a = []
-
-    for i, item in enumerate(nodesObjects, start=0):
-        x_a.append(i)
-        y_a.append(X_Values[it - 1][i])
-
-    #plt.title("Measurements Comparison")
-    plt.scatter(x_a, y_a, label="Final Measurement")
-    plt.plot(x_a, y_a)
-    plt.xlabel("10 nodes")
-    plt.ylabel("Value")
-    plt.xticks(x_a)
-    plt.legend(loc="best")
-
-    plt.savefig(FileName, dpi=1200)  
-    plt.show()
-
 
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     DisplayGraph()
