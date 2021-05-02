@@ -205,7 +205,7 @@ def main():
 def WeightDesign2(i, j, nodesObjects, num_nodes, Q_Bar):
 
     cv = 0.01
-    ris = 2.5
+    ris = 3
     c2W = (0.95)*((cv)/(ris**2))
 
     Equalsum = 0
@@ -231,7 +231,7 @@ def WeightDesign2(i, j, nodesObjects, num_nodes, Q_Bar):
 def WeightDesign1(i, j, nodesObjects, num_nodes, Q_Bar):
 
     cv = 0.01
-    ris = 2.5
+    ris = 3
     Equalsum = 0
 
     #Weighted average design 1 if i != j
@@ -264,7 +264,7 @@ def V_t(nodesObjects, i, Q_Bar):
 
     #Calculate noise variance
     cv = 0.01
-    ris = 2.5
+    ris = 3
 
     Node_Pos = nodesObjects[i].position
     Distance = Node_Pos - Q_Bar
