@@ -11,6 +11,7 @@
 # Andy Alarcon       04-29-2021     1.0 ... Copied code from WeightedAverageConsensus.py
 # Andy Alarcon       05-02-2021     1.0 ... Parsed data from .txt file
 # Andy Alarcon       05-03-2021     1.1 ... Implemented consensus for field
+# Andy Alarcon       05-05-2021     1.1 ... Fixed cv value bug
 # -----------------------------------------------------------------------------
 
 import matplotlib.pyplot as plt
@@ -124,24 +125,7 @@ def main():
 
                     #Assign next measurment
                     X_Values[t][i] =  val1
-
-                    #Move current node towards cell
-                    #Compute relative y pos 
-                    yrv = Q_Bar[1] - nodesObjects[i].position[1]
-                    #Compute relative x pos 
-                    xrv = Q_Bar[0] - nodesObjects[i].position[0]
-                    #compute direction
-                    Hrv = np.arctan2(yrv, xrv)
-                    #Compute distance
-                    Diastance = np.sqrt(np.square(Q_Bar[0] - nodesObjects[i].position[0]) + np.square(Q_Bar[1] - nodesObjects[i].position[1]))
-                    if 0.1 <= Diastance <= 0.2:
-                        nodesObjects[i].FindyourNeighbors(nodesObjects, r)
-
-                    else:
-                        new_NodePos = nodesObjects[i].position + (0.05 * np.array([np.cos(Hrv), np.sin(Hrv)]))
-                        nodesObjects[i].position = new_NodePos
-                        nodesObjects[i].FindyourNeighbors(nodesObjects, 2)
-            
+        
 
             MeasureError = 100
             #Take the closest measurment at last measurement from all the nodes
@@ -211,9 +195,9 @@ def GraphField(r, c, Cells, FileName, Title):
 # -----------------------------------------------------------------------------
 def WeightDesign2(i, j, nodesObjects, num_nodes, Q_Bar):
 
-    cv = 0.001
+    cv = 0.01
     ris = 5
-    c2W = (0.9)*((cv)/(ris**2))
+    c2W = (0.95)*((cv)/(ris**2))
 
     Equalsum = 0
     #WeightDesign2 if i != j
@@ -239,7 +223,7 @@ def WeightDesign2(i, j, nodesObjects, num_nodes, Q_Bar):
 def V_t(nodesObjects, i, Q_Bar):
 
     #Calculate noise variance
-    cv = 0.001
+    cv = 0.01
     ris = 5
 
     Node_Pos = nodesObjects[i].position

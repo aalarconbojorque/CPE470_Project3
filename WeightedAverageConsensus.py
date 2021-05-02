@@ -13,6 +13,7 @@
 # Andy Alarcon       04-26-2021     1.2 ... implemented weight design 1, graphs for average and measurements
 # Andy Alarcon       04-27-2021     1.3 ... adjusted graphs, added weight design 2
 # Andy Alarcon       04-28-2021     1.3 ... Fixed bug that provided inaccurate neighbors
+# Andy Alarcon       05-05-2021     1.4 ... Fixed cv value bug
 # -----------------------------------------------------------------------------
 
 import matplotlib.pyplot as plt
@@ -41,7 +42,7 @@ class GraphNode:
 
 
 def main():
-    r = 1  # Set Communication Range
+    r = 2.5  # Set Communication Range
     num_nodes = 10  # Randomly generated nodes
     delta_t_update = 0.008
     n = 2  # Number of dimensions
@@ -50,7 +51,7 @@ def main():
     #Node object array
     nodesObjects = []
     #Iterations
-    it = 1000
+    it = 1500
 
     # Add measurment for each node yi = theta_t + v_i
     nodes_va = (50 * np.ones((num_nodes, 1))) + \
@@ -79,7 +80,7 @@ def main():
 
     #Assign initial measurement weight 1 and 2
     cv = 0.01
-    rs = 1.6
+    rs = 2.5
     v = 0
     n = 0
     F = 50
@@ -133,39 +134,11 @@ def main():
             iiWeightComp = WeightDesign1(i,i, nodesObjects, num_nodes, Q_Bar)
             val1 =  iiWeightComp * float(X_Values[t-1][i]) + summat
             
-            #Assign next measurment
-            if(math.isnan(val1)):
-                out_num = np.nan_to_num(val1)
-                X_Values[t][i] =  out_num
-            else:
-                X_Values[t][i] = val1
+            X_Values[t][i] = val1
 
-            #Compute weighted average, correct if becomes nan        
-            np.seterr(divide='ignore', invalid='ignore')
-            PossibleNan = ((iiWeightComp * X_Values[t-1][i]) /(iiWeightComp))
-            if(math.isnan(PossibleNan)):
-                out_num = np.nan_to_num(PossibleNan)
-                E_Values[t][i] = out_num
-            
-            else:
-                E_Values[t][i] = PossibleNan
+            E_Values[t][i] = ((iiWeightComp * X_Values[t-1][i]) /(iiWeightComp))
 
-            #Move current node towards cell
-            #Compute relative y pos 
-            yrv = Q_Bar[1] - nodesObjects[i].position[1]
-            #Compute relative x pos 
-            xrv = Q_Bar[0] - nodesObjects[i].position[0]
-            #compute direction
-            Hrv = np.arctan2(yrv, xrv)
-            #Compute distance
-            Diastance = np.sqrt(np.square(Q_Bar[0] - nodesObjects[i].position[0]) + np.square(Q_Bar[1] - nodesObjects[i].position[1]))
-            if 0.1 <= Diastance <= 0.2:
-                pass
-
-            else:
-                new_NodePos = nodesObjects[i].position + (0.05 * np.array([np.cos(Hrv), np.sin(Hrv)]))
-                nodesObjects[i].position = new_NodePos
-                nodesObjects[i].FindyourNeighbors(nodesObjects, 2)
+           
         
     DisplayScatterPlot(nodesObjects, X_Values, it, 'WeightedDesign1_NodesScatterPlot.png')
     DisplayNodesGraph(E_Values, X_Values, it, 'WeightedDesign1_NodesDistance.png')
@@ -217,22 +190,7 @@ def main():
             #Compute weighted average, correct if becomes nan        
             E2_Values[t][i] = ((iiWeightComp * X2_Values[t-1][i]) /(iiWeightComp))
 
-            #Move current node towards cell
-            #Compute relative y pos 
-            yrv = Q_Bar[1] - nodesObjects[i].position[1]
-            #Compute relative x pos 
-            xrv = Q_Bar[0] - nodesObjects[i].position[0]
-            #compute direction
-            Hrv = np.arctan2(yrv, xrv)
-            #Compute distance
-            Diastance = np.sqrt(np.square(Q_Bar[0] - nodesObjects[i].position[0]) + np.square(Q_Bar[1] - nodesObjects[i].position[1]))
-            if 0.1 <= Diastance <= 0.2:
-                nodesObjects[i].FindyourNeighbors(nodesObjects, r)
-
-            else:
-                new_NodePos = nodesObjects[i].position + (0.005 * np.array([np.cos(Hrv), np.sin(Hrv)]))
-                nodesObjects[i].position = new_NodePos
-                nodesObjects[i].FindyourNeighbors(nodesObjects, 2)
+            
 
         
     DisplayScatterPlot(nodesObjects, X2_Values, it, 'WeightedDesign2_NodesScatterPlot.png')
@@ -246,9 +204,9 @@ def main():
 # -----------------------------------------------------------------------------
 def WeightDesign2(i, j, nodesObjects, num_nodes, Q_Bar):
 
-    cv = 0.001
-    ris = 2
-    c2W = (0.5)*((cv)/(ris**2))
+    cv = 0.01
+    ris = 2.5
+    c2W = (0.95)*((cv)/(ris**2))
 
     Equalsum = 0
     #WeightDesign2 if i != j
@@ -272,24 +230,20 @@ def WeightDesign2(i, j, nodesObjects, num_nodes, Q_Bar):
 # -----------------------------------------------------------------------------
 def WeightDesign1(i, j, nodesObjects, num_nodes, Q_Bar):
 
-    cv = 0.001
-    ris = 2
+    cv = 0.01
+    ris = 2.5
     Equalsum = 0
 
     #Weighted average design 1 if i != j
     if(i != j and j in nodesObjects[i].neighbors):
         
-        ni = len(nodesObjects[i].neighbors)
+        ni = num_nodes
         ni = ni - 1
-        c1W = ((0.9)*(2*cv)/((ris**2)*(np.absolute(ni))))
+        c1W = ((0.95)*(2*cv)/((ris**2)*(np.absolute(ni))))
         Vi = V_t(nodesObjects, i, Q_Bar)
         Vj = V_t(nodesObjects, j, Q_Bar)
 
-        if(Vi == 0 or Vj == 0):
-            return 0
-
-        else:
-            return (c1W/(Vi +Vj))
+        return (c1W/(Vi +Vj))
 
     #Weighted average design 1 if i == j
     elif (i == j):
@@ -309,8 +263,8 @@ def WeightDesign1(i, j, nodesObjects, num_nodes, Q_Bar):
 def V_t(nodesObjects, i, Q_Bar):
 
     #Calculate noise variance
-    cv = 0.001
-    ris = 1.6
+    cv = 0.01
+    ris = 2.5
 
     Node_Pos = nodesObjects[i].position
     Distance = Node_Pos - Q_Bar

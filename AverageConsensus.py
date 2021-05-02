@@ -11,6 +11,7 @@
 # Andy Alarcon       04-27-2021     1.0 ... Copied code from weightedAverageConsensu.py
 # Andy Alarcon       04-28-2021     1.1 ... Implemented metropolis and average
 # Andy Alarcon       04-28-2021     1.1 ... Fixed bug that provided inaccurate neighbors
+# Andy Alarcon       05-05-2021     1.2 ... Fixed cv value bug
 # -----------------------------------------------------------------------------
 
 import matplotlib.pyplot as plt
@@ -40,7 +41,7 @@ class GraphNode:
 
 def main():
     r = 2  # Set Communication Range
-    num_nodes = 50  # Randomly generated nodes
+    num_nodes = 10  # Randomly generated nodes
     delta_t_update = 0.008
     n = 2  # Number of dimensions
     #Node positions
@@ -126,22 +127,7 @@ def main():
             #Compute weighted average       
             E_Values[t][i] = ((iiWeightComp * X_Values[t-1][i]) /(iiWeightComp))  
 
-            #Move current node towards cell
-            #Compute relative y pos 
-            yrv = Q_Bar[1] - nodesObjects[i].position[1]
-            #Compute relative x pos 
-            xrv = Q_Bar[0] - nodesObjects[i].position[0]
-            #compute direction
-            Hrv = np.arctan2(yrv, xrv)
-            #Compute distance
-            Diastance = np.sqrt(np.square(Q_Bar[0] - nodesObjects[i].position[0]) + np.square(Q_Bar[1] - nodesObjects[i].position[1]))
-            if 0.1 <= Diastance <= 0.2:
-                pass
-
-            else:
-                new_NodePos = nodesObjects[i].position + (0.05 * np.array([np.cos(Hrv), np.sin(Hrv)]))
-                nodesObjects[i].position = new_NodePos
-                nodesObjects[i].FindyourNeighbors(nodesObjects, r)
+     
                 
         
     DisplayScatterPlot(nodesObjects, X_Values, it, 'Metropolis_NodesScatterPlot.png')
@@ -193,22 +179,7 @@ def main():
             #Compute weighted average       
             E2_Values[t][i] = ((iiWeightComp * X2_Values[t-1][i]) /(iiWeightComp))  
 
-            #Move current node towards cell
-            #Compute relative y pos 
-            yrv = Q_Bar[1] - nodesObjects[i].position[1]
-            #Compute relative x pos 
-            xrv = Q_Bar[0] - nodesObjects[i].position[0]
-            #compute direction
-            Hrv = np.arctan2(yrv, xrv)
-            #Compute distance
-            Diastance = np.sqrt(np.square(Q_Bar[0] - nodesObjects[i].position[0]) + np.square(Q_Bar[1] - nodesObjects[i].position[1]))
-            if 0.1 <= Diastance <= 0.2:
-                pass
-
-            else:
-                new_NodePos = nodesObjects[i].position + (0.05 * np.array([np.cos(Hrv), np.sin(Hrv)]))
-                nodesObjects[i].position = new_NodePos
-                nodesObjects[i].FindyourNeighbors(nodesObjects, r)
+            
         
     DisplayScatterPlot(nodesObjects, X2_Values, it, 'MaxDegreeWeight_NodesScatterPlot.png')
     DisplayNodesGraph(E2_Values, X2_Values, it, 'MaxDegreeWeight_NodesDistance.png')
@@ -269,7 +240,7 @@ def V_t(nodesObjects, i, Q_Bar):
 
     #Calculate noise variance
     cv = 0.001
-    ris = 2
+    ris = 1.6
 
     Node_Pos = nodesObjects[i].position
     Distance = Node_Pos - Q_Bar
@@ -306,7 +277,7 @@ def DisplayNodesGraph(E_Values, X_Values, it, FileName):
     #plt.title("Average Comparison")  
     plt.xlabel("Iterations")
     plt.ylabel("Value")
-    #plt.legend(loc="upper right")
+    plt.legend(loc="upper right")
     plt.savefig(FileName, dpi=1200) 
     plt.show()
     plt.close()
